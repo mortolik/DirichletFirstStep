@@ -38,10 +38,8 @@ void MainWindow::setupTestProblem()
     m_tabWidget->addTab(testTabs, "Тестовая задача");
 }
 
-
 void MainWindow::setupMainProblem()
 {
-    // Настройка основной задачи (вариант 4)
     int n = 50;
     int m = 50;
     double omega = 1.8;
@@ -51,9 +49,21 @@ void MainWindow::setupMainProblem()
     m_mainModel->setup(n, m, omega, eps, maxIter);
     m_mainModel->solveMainProblem();
 
-    m_mainWidget = new DirichletWidget(m_mainModel, false, this);
-    m_tabWidget->addTab(m_mainWidget, "Основная задача");
+    // Вкладка 1: численное решение
+    DirichletWidget *mainSol = new DirichletWidget(m_mainModel, false, this);
+
+    // Вкладка 2: сравнение с сеткой 2n × 2m
+    double eps2;
+    QVector<QVector<double>> diff = m_mainModel->compareWithFinerGrid(n * 2, m * 2, eps2);
+    DirichletWidget *accuracyWidget = new DirichletWidget(new QVector<QVector<double>>(diff), 1.0, 2.0, 2.0, 3.0, this);
+
+    QTabWidget *mainTabs = new QTabWidget;
+    mainTabs->addTab(mainSol, "Численное решение");
+    mainTabs->addTab(accuracyWidget, QString("Разность с сеткой 2n×2m (ε₂ ≈ %1)").arg(eps2, 0, 'e', 2));
+
+    m_tabWidget->addTab(mainTabs, "Основная задача");
 }
+
 
 MainWindow::~MainWindow()
 {

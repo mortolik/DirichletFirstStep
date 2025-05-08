@@ -194,3 +194,34 @@ const QVector<QVector<double>> &DirichletSolverModel::exactSolution() const
 {
     return m_uExact;
 }
+
+QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const
+{
+    DirichletSolverModel fineModel;
+    fineModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    fineModel.solveMainProblem(); // основная задача без точного решения
+
+    double hRatio = double(finerN) / m_n;
+    double kRatio = double(finerM) / m_m;
+
+    QVector<QVector<double>> fineU = fineModel.solution();
+    QVector<QVector<double>> coarseVsFine(m_n + 1, QVector<double>(m_m + 1, 0.0));
+
+    eps2Out = 0.0;
+
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
+            int fi = i * hRatio;
+            int fj = j * kRatio;
+
+            double diff = qAbs(m_u[i][j] - fineU[fi][fj]);
+            coarseVsFine[i][j] = diff;
+            eps2Out = qMax(eps2Out, diff);
+        }
+    }
+
+    return coarseVsFine;
+}
+

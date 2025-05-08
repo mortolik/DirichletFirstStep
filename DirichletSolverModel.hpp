@@ -20,6 +20,8 @@ public:
     const QVector<QVector<double>> &exactSolution() const;
 
     QVector<QVector<double>> error() const;
+    QVector<QVector<double>> compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const;
+
 
 private:
     int m_n;
