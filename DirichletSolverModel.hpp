@@ -19,6 +19,8 @@ public:
     const QVector<QVector<double>> &solution() const;
     const QVector<QVector<double>> &exactSolution() const;
 
+    QVector<QVector<double>> error() const;
+
 private:
     int m_n;
     int m_m;
@@ -35,6 +37,7 @@ private:
 
     QVector<QVector<double>> m_u;
     QVector<QVector<double>> m_uExact;
+
 
     void initialize();
 

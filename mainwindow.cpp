@@ -17,19 +17,27 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupTestProblem()
 {
-    // Настройка тестовой задачи (вариант 4)
-    int n = 50; // количество разбиений по x
-    int m = 50; // количество разбиений по y
-    double omega = 1.8; // параметр релаксации
-    double eps = 1e-6; // точность
-    int maxIter = 10000; // максимальное число итераций
+    int n = 50;
+    int m = 50;
+    double omega = 1.8;
+    double eps = 1e-6;
+    int maxIter = 10000;
 
     m_testModel->setup(n, m, omega, eps, maxIter);
     m_testModel->solveTestProblem();
 
-    m_testWidget = new DirichletWidget(m_testModel, true, this);
-    m_tabWidget->addTab(m_testWidget, "Тестовая задача");
+    // Создаём внутренний QTabWidget
+    QTabWidget *testTabs = new QTabWidget;
+
+    DirichletWidget *exactVsNumerical = new DirichletWidget(m_testModel, true, this);
+    testTabs->addTab(exactVsNumerical, "u*, v");
+
+    auto *errorWidget = new DirichletWidget(new QVector<QVector<double>>(m_testModel->error()), 1.0, 2.0, 2.0, 3.0, this);
+    testTabs->addTab(errorWidget, "Ошибка |u* - v|");
+
+    m_tabWidget->addTab(testTabs, "Тестовая задача");
 }
+
 
 void MainWindow::setupMainProblem()
 {

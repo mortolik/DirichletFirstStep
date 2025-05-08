@@ -7,10 +7,25 @@
 DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
     m_model(model),
+    m_isTest(isTest),
     m_surface(new Q3DSurface),
     m_container(QWidget::createWindowContainer(m_surface, this)),
-    m_layout(new QVBoxLayout(this)),
-    m_isTest(isTest)
+    m_layout(new QVBoxLayout(this))
+{
+    m_layout->addWidget(m_container);
+    setupChart();
+}
+
+DirichletWidget::DirichletWidget(const QVector<QVector<double>> *data, double a, double b, double c, double d, QWidget *parent)
+    : QWidget(parent),
+    m_dataOnly(data),
+    m_a(a),
+    m_b(b),
+    m_c(c),
+    m_d(d),
+    m_surface(new Q3DSurface),
+    m_container(QWidget::createWindowContainer(m_surface, this)),
+    m_layout(new QVBoxLayout(this))
 {
     m_layout->addWidget(m_container);
     setupChart();
@@ -29,19 +44,25 @@ void DirichletWidget::setupChart()
     m_surface->setShadowQuality(QAbstract3DGraph::ShadowQualityNone);
     m_surface->activeTheme()->setType(Q3DTheme::ThemeQt);
 
+    if (m_dataOnly)
+    {
+        auto *series = createSeries(*m_dataOnly, "Ошибка |u* - v|");
+        series->setBaseColor(Qt::blue);
+        m_surface->addSeries(series);
+        return;
+    }
+
     if (m_isTest)
     {
-        auto *series1 = createSeries(m_model->exactSolution(), "Точное решение u*");
-        auto *series2 = createSeries(m_model->solution(), "Численное решение v");
-        m_surface->addSeries(series1);
-        m_surface->addSeries(series2);
+        m_surface->addSeries(createSeries(m_model->exactSolution(), "u*(x, y)"));
+        m_surface->addSeries(createSeries(m_model->solution(), "v(x, y)"));
     }
     else
     {
-        auto *series = createSeries(m_model->solution(), "Численное решение");
-        m_surface->addSeries(series);
+        m_surface->addSeries(createSeries(m_model->solution(), "Численное решение"));
     }
 }
+
 
 QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &data, const QString &name)
 {

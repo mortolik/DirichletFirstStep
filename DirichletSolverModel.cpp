@@ -157,6 +157,19 @@ void DirichletSolverModel::solveMainProblem()
     }
 }
 
+QVector<QVector<double>> DirichletSolverModel::error() const
+{
+    QVector<QVector<double>> diff(m_n + 1, QVector<double>(m_m + 1));
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
+            diff[i][j] = qAbs(m_uExact[i][j] - m_u[i][j]);
+        }
+    }
+    return diff;
+}
+
 double DirichletSolverModel::maxError() const
 {
     double maxErr = 0.0;
