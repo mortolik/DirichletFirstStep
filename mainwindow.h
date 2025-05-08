@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "DirichletSolverModel.hpp"
+#include "DirichletWidget.hpp"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -18,6 +20,13 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
+    void setupTestProblem();
+    void setupMainProblem();
+
+    QTabWidget *m_tabWidget;
+    DirichletSolverModel *m_testModel;
+    DirichletSolverModel *m_mainModel;
+    DirichletWidget *m_testWidget;
+    DirichletWidget *m_mainWidget;
 };
 #endif // MAINWINDOW_H
