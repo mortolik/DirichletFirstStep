@@ -1,4 +1,6 @@
 QT       += core gui
+QT += datavisualization
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,11 +12,13 @@ CONFIG += c++17
 
 SOURCES += \
     DirichletSolverModel.cpp \
+    DirichletWidget.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     DirichletSolverModel.hpp \
+    DirichletWidget.hpp \
     mainwindow.h
 
 FORMS += \
