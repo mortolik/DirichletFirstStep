@@ -27,7 +27,7 @@ void MainWindow::setupTestProblem()
     m_testModel->setup(n, m, omega, eps, maxIter);
     m_testModel->solveTestProblem();
 
-    m_testWidget = new DirichletWidget(m_testModel);
+    m_testWidget = new DirichletWidget(m_testModel, true, this);
     m_tabWidget->addTab(m_testWidget, "Тестовая задача");
 }
 
@@ -41,9 +41,9 @@ void MainWindow::setupMainProblem()
     int maxIter = 10000;
 
     m_mainModel->setup(n, m, omega, eps, maxIter);
-    // Здесь нужно добавить решение основной задачи
+    m_mainModel->solveMainProblem();
 
-    m_mainWidget = new DirichletWidget(m_mainModel);
+    m_mainWidget = new DirichletWidget(m_mainModel, false, this);
     m_tabWidget->addTab(m_mainWidget, "Основная задача");
 }
 

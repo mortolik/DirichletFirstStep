@@ -121,6 +121,42 @@ void DirichletSolverModel::solveTestProblem()
     }
 }
 
+void DirichletSolverModel::solveMainProblem()
+{
+    int iter = 0;
+    bool stop = false;
+
+    while (!stop && iter < m_maxIter)
+    {
+        stop = true;
+
+        for (int i = 1; i < m_n; ++i)
+        {
+            for (int j = 1; j < m_m; ++j)
+            {
+                double x = m_a + i * m_h;
+                double y = m_c + j * m_k;
+
+                double rhs = (m_u[i + 1][j] + m_u[i - 1][j]) / (m_h * m_h)
+                             + (m_u[i][j + 1] + m_u[i][j - 1]) / (m_k * m_k)
+                             - f(x, y);
+
+                double denom = 2.0 * (1.0 / (m_h * m_h) + 1.0 / (m_k * m_k));
+                double uNew = (1.0 - m_omega) * m_u[i][j] + m_omega * rhs / denom;
+
+                if (qAbs(uNew - m_u[i][j]) > m_eps)
+                {
+                    stop = false;
+                }
+
+                m_u[i][j] = uNew;
+            }
+        }
+
+        ++iter;
+    }
+}
+
 double DirichletSolverModel::maxError() const
 {
     double maxErr = 0.0;

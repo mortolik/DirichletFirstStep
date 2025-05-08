@@ -12,6 +12,8 @@ public:
     explicit DirichletSolverModel(QObject *parent = nullptr);
     void setup(int n, int m, double omega, double eps, int maxIter);
     void solveTestProblem();
+    void solveMainProblem();
+
     double maxError() const;
 
     const QVector<QVector<double>> &solution() const;
