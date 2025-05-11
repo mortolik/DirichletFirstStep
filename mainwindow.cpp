@@ -55,7 +55,10 @@ void MainWindow::setupMainProblem()
     // Вкладка 2: сравнение с сеткой 2n × 2m
     double eps2;
     QVector<QVector<double>> diff = m_mainModel->compareWithFinerGrid(n * 2, m * 2, eps2);
-    DirichletWidget *accuracyWidget = new DirichletWidget(new QVector<QVector<double>>(diff), 1.0, 2.0, 2.0, 3.0, this);
+
+    QString accReport = m_mainModel->reportString(false, eps2);
+    auto *accuracyWidget = new DirichletWidget(new QVector<QVector<double>>(diff), 1.0, 2.0, 2.0, 3.0, this, accReport);
+
 
     QTabWidget *mainTabs = new QTabWidget;
     mainTabs->addTab(mainSol, "Численное решение");

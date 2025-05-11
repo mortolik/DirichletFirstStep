@@ -22,6 +22,20 @@ public:
     QVector<QVector<double>> error() const;
     QVector<QVector<double>> compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const;
 
+    struct ReportData
+    {
+        int n = 0;
+        int m = 0;
+        double omega = 1.0;
+        double eps = 1e-6;
+        int maxIter = 10000;
+        double maxError = -1.0;
+        double accuracy = -1.0; // ε2
+        bool isTest = true;
+    };
+
+    QString reportString(bool isTestTask = true, double extraError = -1.0) const;
+    ReportData generateReportData(bool isTestTask = true, double extraError = -1.0) const;
 
 private:
     int m_n;
@@ -50,4 +64,6 @@ private:
     double mu2(double y) const;
     double mu3(double x) const;
     double mu4(double x) const;
+    QPair<double, double> maxErrorPoint() const;
+
 };

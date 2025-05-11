@@ -1,6 +1,7 @@
 #include "DirichletSolverModel.hpp"
 
 #include <QtMath>
+#include <QTextStream>
 
 DirichletSolverModel::DirichletSolverModel(QObject *parent)
     : QObject(parent),
@@ -224,4 +225,75 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
 
     return coarseVsFine;
 }
+
+DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool isTestTask, double extraError) const
+{
+    ReportData data;
+    data.n = m_n;
+    data.m = m_m;
+    data.omega = m_omega;
+    data.eps = m_eps;
+    data.maxIter = m_maxIter;
+    data.isTest = isTestTask;
+
+    if (isTestTask)
+        data.maxError = maxError();
+
+    if (!isTestTask)
+        data.accuracy = extraError;
+
+    return data;
+}
+
+QString DirichletSolverModel::reportString(bool isTestTask, double extraError) const
+{
+    ReportData data = generateReportData(isTestTask, extraError);
+
+    QStringList lines;
+    lines << (data.isTest ? "Справка по тестовой задаче:" : "Справка по основной задаче:");
+    lines << QString("Сетка: n = %1, m = %2").arg(data.n).arg(data.m);
+    lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
+    lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
+    lines << "Начальное приближение: интерполяция граничных условий";
+
+    if (data.isTest && data.maxError >= 0)
+    {
+        lines << QString("Максимальная погрешность ε₁ = %1").arg(data.maxError, 0, 'e', 3);
+        auto [xmax, ymax] = maxErrorPoint();
+        lines << QString("Максимальное отклонение в точке: x = %1, y = %2").arg(xmax).arg(ymax);
+    }
+
+    if (!data.isTest && data.accuracy >= 0)
+    {
+        lines << QString("Оценка точности ε₂ = %1").arg(data.accuracy, 0, 'e', 3);
+        lines << "Оценка: ε₂ = max |v(x, y) − v₂(x, y)| между сетками (n, m) и (2n, 2m)";
+    }
+
+    return lines.join("\n");
+}
+
+QPair<double, double> DirichletSolverModel::maxErrorPoint() const
+{
+    double maxErr = 0.0;
+    int maxI = 0, maxJ = 0;
+
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
+            double err = qAbs(m_uExact[i][j] - m_u[i][j]);
+            if (err > maxErr)
+            {
+                maxErr = err;
+                maxI = i;
+                maxJ = j;
+            }
+        }
+    }
+
+    double x = m_a + maxI * m_h;
+    double y = m_c + maxJ * m_k;
+    return qMakePair(x, y);
+}
+
 
