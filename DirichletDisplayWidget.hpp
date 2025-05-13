@@ -21,6 +21,7 @@ private:
     QTableWidget *m_table;
     QHBoxLayout *m_layout;
 
+    QGroupBox* createTable();
     void fillTable(const QVector<QVector<double>> &data);
     void updateTable();
 };

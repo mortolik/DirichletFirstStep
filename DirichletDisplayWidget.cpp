@@ -1,17 +1,18 @@
 #include "DirichletDisplayWidget.hpp"
 #include "DirichletSolverModel.hpp"
+#include "qgroupbox.h"
 #include <QHeaderView>
 
 DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
     m_model(model),
     m_isTest(isTest),
-    m_table(new QTableWidget(this)),
     m_layout(new QHBoxLayout(this))
 {
+    m_layout->setContentsMargins(10, 10, 10, 10);
     m_chart = new DirichletWidget(m_model, m_isTest, this);
     m_layout->addWidget(m_chart, 1);
-    m_layout->addWidget(m_table, 1);
+    m_layout->addWidget(createTable(), 1);
 
     connect(m_chart, &DirichletWidget::solutionUpdated, this, &DirichletDisplayWidget::onSolutionUpdated);
     updateTable();
@@ -76,4 +77,16 @@ void DirichletDisplayWidget::updateTable()
 void DirichletDisplayWidget::onSolutionUpdated()
 {
     updateTable();
+}
+
+QGroupBox *DirichletDisplayWidget::createTable()
+{
+    QGroupBox* box = new QGroupBox();
+    QVBoxLayout* layout = new QVBoxLayout(box);
+    layout->setContentsMargins(5, 5, 5, 5);
+
+    m_table = new QTableWidget;
+    layout->addWidget(m_table);
+
+    return box;
 }

@@ -23,7 +23,9 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     m_mainLayout(new QHBoxLayout(this)),
     m_chartLayout(new QVBoxLayout)
 {
+    m_mainLayout->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout* chartAndReportLayot = new QVBoxLayout();
+    chartAndReportLayot->setContentsMargins(0, 0, 0, 0);
     chartAndReportLayot->addWidget(createReportBox(), 0, Qt::AlignTop);
     chartAndReportLayot->addWidget(createChartBox());
     chartAndReportLayot->setStretch(0, 0);
@@ -241,7 +243,7 @@ QGroupBox* DirichletWidget::createReportBox()
     m_reportEdit = new QTextEdit;
     m_reportEdit->setReadOnly(true);
     m_reportEdit->setFont(QFont("Courier"));
-
+    
     m_reportEdit->setHtml(R"(
 <font color="#888">Здесь будет справка...</font><br>
 <font color="#888">Нажмите "Запустить", чтобы начать расчёт.</font>
