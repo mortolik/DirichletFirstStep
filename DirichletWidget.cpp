@@ -1,9 +1,14 @@
 #include "DirichletWidget.hpp"
 #include "DirichletSolverModel.hpp"
+
 #include <QLabel>
+#include <QDebug>
+#include <QSpinBox>
+#include <QGroupBox>
+#include <QBoxLayout>
+#include <QVBoxLayout>
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
-#include <QDebug>
 
 DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
@@ -19,6 +24,7 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
 
     m_reportLabel->setWordWrap(true);
     m_reportLabel->setFixedWidth(250);
+    m_mainLayout->addWidget(createSettingsGroup());
     m_mainLayout->addWidget(m_reportLabel, 0, Qt::AlignTop);
 
     m_mainLayout->addLayout(m_chartLayout);
@@ -61,7 +67,6 @@ void DirichletWidget::setupChart()
     }
 }
 
-
 QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &data, const QString &name)
 {
     int rows = data.size();
@@ -100,4 +105,61 @@ QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &
     series->setDrawMode(QSurface3DSeries::DrawSurface);
     series->setName(name);
     return series;
+}
+
+QGroupBox* DirichletWidget::createSettingsGroup()
+{
+    QGroupBox* box = new QGroupBox("Параметры", this);
+    box->setMaximumWidth(175);
+
+    QVBoxLayout* layout = new QVBoxLayout(box);
+    layout->setSpacing(5);
+    layout->setContentsMargins(5, 5, 5, 5);
+
+    m_nParam = new QSpinBox();
+    m_mParam = new QSpinBox();
+    m_epsParam = new QDoubleSpinBox();
+    m_stepsParam = new QSpinBox();
+    m_omegaParam = new QDoubleSpinBox();
+
+    m_nParam->setRange(1, 1000);
+    m_nParam->setValue(5);
+
+    m_mParam->setRange(1, 1000);
+    m_mParam->setValue(5);
+
+    m_epsParam->setDecimals(7);
+    m_epsParam->setValue(0.0000005);
+    m_epsParam->setSingleStep(0.001);
+    m_epsParam->setRange(0.0000001, 1.0);
+
+    m_omegaParam->setRange(0.1, 2.0);
+    m_omegaParam->setSingleStep(0.1);
+    m_omegaParam->setValue(1.5);
+
+    auto createLabeledWidget = [](const QString& labelText, QWidget* widget, int width) -> QWidget* {
+        QLabel* label = new QLabel(labelText);
+        label->setFixedWidth(width);
+        QWidget* container = new QWidget();
+        QHBoxLayout* hLayout = new QHBoxLayout(container);
+        hLayout->addWidget(label, 0, Qt::AlignLeft);
+        hLayout->addWidget(widget, 1);
+        hLayout->setSpacing(5);
+        hLayout->setContentsMargins(0, 0, 0, 0);
+        return container;
+    };
+
+    QWidget* nmContainer = new QWidget();
+    QHBoxLayout* nmLayout = new QHBoxLayout(nmContainer);
+    nmLayout->addWidget(createLabeledWidget("n =", m_nParam, 20));
+    nmLayout->addWidget(createLabeledWidget("m =", m_mParam, 20));
+    nmLayout->setSpacing(10);
+    nmLayout->setContentsMargins(0, 0, 0, 0);
+
+    layout->addWidget(nmContainer);
+    layout->addWidget(createLabeledWidget("Точность ", m_epsParam, 80));
+    layout->addWidget(createLabeledWidget("Кол-во шагов ", m_stepsParam, 80));
+    layout->addWidget(createLabeledWidget("Omega ", m_omegaParam, 80));
+
+    return box;
 }

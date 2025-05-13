@@ -1,11 +1,14 @@
 #pragma once
-#include "qlabel.h"
 #include <QWidget>
 #include <QtDataVisualization/Q3DSurface>
 #include <QtDataVisualization/QSurface3DSeries>
 #include <QtDataVisualization/QSurfaceDataProxy>
-#include <QVBoxLayout>
 
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QGroupBox)
+QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QDoubleSpinBox)
 QT_FORWARD_DECLARE_CLASS(DirichletSolverModel)
 
 using namespace QtDataVisualization;
@@ -30,6 +33,13 @@ private:
     double m_a = 0, m_b = 1, m_c = 0, m_d = 1;
     QString m_reportText;
 
+    QSpinBox* m_nParam {nullptr};
+    QSpinBox* m_mParam {nullptr};
+    QDoubleSpinBox* m_epsParam {nullptr};
+    QSpinBox* m_stepsParam {nullptr};
+    QDoubleSpinBox* m_omegaParam {nullptr};
+
     void setupChart();
     QSurface3DSeries *createSeries(const QVector<QVector<double>> &data, const QString &name);
+    QGroupBox* createSettingsGroup();
 };
