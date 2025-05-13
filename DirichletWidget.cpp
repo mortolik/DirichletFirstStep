@@ -11,43 +11,22 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     m_isTest(isTest),
     m_surface(new Q3DSurface),
     m_container(QWidget::createWindowContainer(m_surface, this)),
-    m_mainLayout(new QHBoxLayout(this)),
+    m_mainLayout(new QVBoxLayout(this)),
     m_chartLayout(new QVBoxLayout),
     m_reportLabel(new QLabel)
 {
     m_chartLayout->addWidget(m_container);
-    m_mainLayout->addLayout(m_chartLayout);
 
     m_reportLabel->setWordWrap(true);
     m_reportLabel->setFixedWidth(250);
     m_mainLayout->addWidget(m_reportLabel, 0, Qt::AlignTop);
 
+    m_mainLayout->addLayout(m_chartLayout);
+
     setupChart();
 
     if (m_model)
         m_reportLabel->setText(m_model->reportString(m_isTest));
-}
-
-DirichletWidget::DirichletWidget(const QVector<QVector<double>> *data, double a, double b, double c, double d, QWidget *parent, const QString &reportText)
-    : QWidget(parent),
-    m_dataOnly(data),
-    m_surface(new Q3DSurface), m_container(QWidget::createWindowContainer(m_surface, this)), m_mainLayout(new QHBoxLayout(this)), m_chartLayout(new QVBoxLayout),
-    m_reportLabel(new QLabel),
-    m_a(a),
-    m_b(b),
-    m_c(c),
-    m_d(d),
-    m_reportText(reportText)
-{
-    m_chartLayout->addWidget(m_container);
-    m_mainLayout->addLayout(m_chartLayout);
-
-    m_reportLabel->setText(m_reportText);
-    m_reportLabel->setWordWrap(true);
-    m_reportLabel->setMinimumWidth(250);
-    m_mainLayout->addWidget(m_reportLabel);
-
-    setupChart();
 }
 
 void DirichletWidget::setupChart()

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "DirichletDisplayWidget.hpp"
 #include "DirichletSolverModel.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -17,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupTestProblem()
 {
-    int n = 50;
-    int m = 50;
+    int n = 100;
+    int m = 100;
     double omega = 1.8;
     double eps = 1e-6;
     int maxIter = 10000;
@@ -29,11 +30,13 @@ void MainWindow::setupTestProblem()
     // Создаём внутренний QTabWidget
     QTabWidget *testTabs = new QTabWidget;
 
-    DirichletWidget *exactVsNumerical = new DirichletWidget(m_testModel, true, this);
-    testTabs->addTab(exactVsNumerical, "u*, v");
+    QString rep = m_testModel->reportString(true);
+    auto *vTable = new DirichletDisplayWidget(m_testModel, true, this);
+    testTabs->addTab(vTable, "v(x,y) + таблица");
 
-    auto *errorWidget = new DirichletWidget(new QVector<QVector<double>>(m_testModel->error()), 1.0, 2.0, 2.0, 3.0, this);
-    testTabs->addTab(errorWidget, "Ошибка |u* - v|");
+    // Uncomment when need error widget
+    // auto *errorWidget = new DirichletWidget(new QVector<QVector<double>>(m_testModel->error()), 1.0, 2.0, 2.0, 3.0, this);
+    // testTabs->addTab(errorWidget, "Ошибка |u* - v|");
 
     m_tabWidget->addTab(testTabs, "Тестовая задача");
 }
@@ -57,7 +60,7 @@ void MainWindow::setupMainProblem()
     QVector<QVector<double>> diff = m_mainModel->compareWithFinerGrid(n * 2, m * 2, eps2);
 
     QString accReport = m_mainModel->reportString(false, eps2);
-    auto *accuracyWidget = new DirichletWidget(new QVector<QVector<double>>(diff), 1.0, 2.0, 2.0, 3.0, this, accReport);
+    auto *accuracyWidget = new  DirichletWidget(m_mainModel, false, this);
 
 
     QTabWidget *mainTabs = new QTabWidget;

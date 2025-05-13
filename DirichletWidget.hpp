@@ -16,7 +16,6 @@ class DirichletWidget : public QWidget
 
 public:
 
-    DirichletWidget(const QVector<QVector<double>> *data, double a, double b, double c, double d, QWidget *parent = nullptr, const QString &reportText = nullptr);
     DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent = nullptr);
 
 private:
@@ -25,7 +24,7 @@ private:
     bool m_isTest = false;
     Q3DSurface *m_surface;
     QWidget *m_container;
-    QHBoxLayout *m_mainLayout;
+    QVBoxLayout *m_mainLayout;
     QVBoxLayout *m_chartLayout;
     QLabel *m_reportLabel;
     double m_a = 0, m_b = 1, m_c = 0, m_d = 1;

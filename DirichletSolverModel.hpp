@@ -36,6 +36,13 @@ public:
 
     QString reportString(bool isTestTask = true, double extraError = -1.0) const;
     ReportData generateReportData(bool isTestTask = true, double extraError = -1.0) const;
+    double a() const { return m_a; }
+    double b() const { return m_b; }
+    double c() const { return m_c; }
+    double d() const { return m_d; }
+    double h() const { return m_h; }
+    double k() const { return m_k; }
+
 
 private:
     int m_n;
