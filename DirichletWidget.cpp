@@ -17,25 +17,29 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     m_isTest(isTest),
     m_surface(new Q3DSurface),
     m_container(QWidget::createWindowContainer(m_surface, this)),
-    m_mainLayout(new QVBoxLayout(this)),
+    m_mainLayout(new QHBoxLayout(this)),
     m_chartLayout(new QVBoxLayout),
     m_reportLabel(new QLabel)
 {
+    m_container->setFixedWidth(1200);
     m_chartLayout->addWidget(m_container);
 
     m_reportLabel->setWordWrap(true);
     m_reportLabel->setFixedWidth(250);
+
+    QVBoxLayout* chartAndReportLayot = new QVBoxLayout();
+    chartAndReportLayot->addWidget(m_reportLabel, 0, Qt::AlignTop);
+    chartAndReportLayot->addLayout(m_chartLayout);
+
     m_mainLayout->addWidget(createLeftLayout());
-    connect(m_solveBtn, &QPushButton::clicked, this, &DirichletWidget::onSolveButtonClicked);
-
-    m_mainLayout->addWidget(m_reportLabel, 0, Qt::AlignTop);
-
-    m_mainLayout->addLayout(m_chartLayout);
+    m_mainLayout->addLayout(chartAndReportLayot);
 
     setupChart();
 
     if (m_model)
         m_reportLabel->setText(m_model->reportString(m_isTest));
+
+    connect(m_solveBtn, &QPushButton::clicked, this, &DirichletWidget::onSolveButtonClicked);
 }
 
 void DirichletWidget::setupChart()
@@ -114,7 +118,7 @@ QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &
 QGroupBox* DirichletWidget::createSettingsGroup()
 {
     QGroupBox* box = new QGroupBox("Параметры", this);
-    box->setMaximumWidth(175);
+    box->setMaximumSize(175, 150);
 
     QVBoxLayout* layout = new QVBoxLayout(box);
     layout->setSpacing(5);
@@ -177,10 +181,11 @@ QGroupBox *DirichletWidget::createLeftLayout()
     box->setMaximumWidth(185);
     QVBoxLayout* layout = new QVBoxLayout(box);
 
-    layout->addWidget(createSettingsGroup());
+    layout->addWidget(createSettingsGroup(), 0, Qt::AlignTop);
 
     m_solveBtn = new QPushButton("Запустить");
-    layout->addWidget(m_solveBtn);
+    layout->addWidget(m_solveBtn, 0, Qt::AlignTop);
+    layout->addStretch();
 
     return box;
 }

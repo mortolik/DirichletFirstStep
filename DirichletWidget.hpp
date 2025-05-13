@@ -8,6 +8,7 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QSpinBox)
 QT_FORWARD_DECLARE_CLASS(QGroupBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QDoubleSpinBox)
 QT_FORWARD_DECLARE_CLASS(DirichletSolverModel)
@@ -34,7 +35,7 @@ private:
     bool m_isTest = false;
     Q3DSurface *m_surface;
     QWidget *m_container;
-    QVBoxLayout *m_mainLayout;
+    QHBoxLayout *m_mainLayout;
     QVBoxLayout *m_chartLayout;
     QLabel *m_reportLabel;
     double m_a = 0, m_b = 1, m_c = 0, m_d = 1;
