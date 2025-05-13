@@ -10,20 +10,17 @@ DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool
     m_layout(new QHBoxLayout(this))
 {
     m_chart = new DirichletWidget(m_model, m_isTest, this);
-    m_layout->addWidget(m_chart, 1); // график слева
-    m_layout->addWidget(m_table, 1); // таблица справа
-
-    // По умолчанию показываем численное решение
-    fillTable(m_model->solution());
+    m_layout->addWidget(m_chart, 1);
+    m_layout->addWidget(m_table, 1);
 }
 
 void DirichletDisplayWidget::fillTable(const QVector<QVector<double>> &data)
 {
-    int cols = data.size();        // по X
-    int rows = data[0].size();     // по Y
+    int cols = data.size();
+    int rows = data[0].size();
 
     m_table->setRowCount(rows);
-    m_table->setColumnCount(cols + 1); // +1 для Y в первой колонке
+    m_table->setColumnCount(cols + 1);
 
     m_table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
     for (int i = 0; i < cols; ++i)

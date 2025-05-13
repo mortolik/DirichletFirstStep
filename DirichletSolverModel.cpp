@@ -15,6 +15,8 @@ DirichletSolverModel::DirichletSolverModel(QObject *parent)
     m_omega(1.0),
     m_eps(1e-6)
 {
+    m_u = QVector<QVector<double>>();
+    m_uExact = QVector<QVector<double>>();
 }
 
 void DirichletSolverModel::setup(int n, int m, double omega, double eps, int maxIter)
@@ -175,11 +177,14 @@ double DirichletSolverModel::maxError() const
 {
     double maxErr = 0.0;
 
-    for (int i = 0; i <= m_n; ++i)
+    if (!m_u.isEmpty() && !m_uExact.isEmpty())
     {
-        for (int j = 0; j <= m_m; ++j)
+        for (int i = 0; i <= m_n; ++i)
         {
-            maxErr = qMax(maxErr, qAbs(m_u[i][j] - m_uExact[i][j]));
+            for (int j = 0; j <= m_m; ++j)
+            {
+                maxErr = qMax(maxErr, qAbs(m_u[i][j] - m_uExact[i][j]));
+            }
         }
     }
 
@@ -277,16 +282,19 @@ QPair<double, double> DirichletSolverModel::maxErrorPoint() const
     double maxErr = 0.0;
     int maxI = 0, maxJ = 0;
 
-    for (int i = 0; i <= m_n; ++i)
+    if(!m_u.isEmpty() && !m_uExact.isEmpty())
     {
-        for (int j = 0; j <= m_m; ++j)
+        for (int i = 0; i <= m_n; ++i)
         {
-            double err = qAbs(m_uExact[i][j] - m_u[i][j]);
-            if (err > maxErr)
+            for (int j = 0; j <= m_m; ++j)
             {
-                maxErr = err;
-                maxI = i;
-                maxJ = j;
+                double err = qAbs(m_uExact[i][j] - m_u[i][j]);
+                if (err > maxErr)
+                {
+                    maxErr = err;
+                    maxI = i;
+                    maxJ = j;
+                }
             }
         }
     }
