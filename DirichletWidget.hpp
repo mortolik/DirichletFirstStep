@@ -1,4 +1,6 @@
 #pragma once
+#include "DirichletSolverModel.hpp"
+#include "qtextedit.h"
 #include <QWidget>
 #include <QtDataVisualization/Q3DSurface>
 #include <QtDataVisualization/QSurface3DSeries>
@@ -6,6 +8,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QTextEdit)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QGroupBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
@@ -26,6 +30,7 @@ public:
 private slots:
     void onSolveButtonClicked();
 
+    void setReportText(const QString &text);
 signals:
     void solutionUpdated();
 
@@ -37,7 +42,6 @@ private:
     QWidget *m_container;
     QHBoxLayout *m_mainLayout;
     QVBoxLayout *m_chartLayout;
-    QLabel *m_reportLabel;
     double m_a = 0, m_b = 1, m_c = 0, m_d = 1;
     QString m_reportText;
 
@@ -49,10 +53,13 @@ private:
 
     QPushButton* m_solveBtn {nullptr};
 
+    QTextEdit* m_reportEdit;
+
     void setupChart();
     QSurface3DSeries *createSeries(const QVector<QVector<double>> &data, const QString &name);
 
     QGroupBox* createSettingsGroup();
     QGroupBox* createLeftLayout();
     void updateChart();
+    QGroupBox *createReportBox();
 };

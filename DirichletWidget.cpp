@@ -5,9 +5,12 @@
 #include <QDebug>
 #include <QSpinBox>
 #include <QGroupBox>
+#include <QLineEdit>
+#include <QTextEdit>
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QFormLayout>
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
 
@@ -18,26 +21,19 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     m_surface(new Q3DSurface),
     m_container(QWidget::createWindowContainer(m_surface, this)),
     m_mainLayout(new QHBoxLayout(this)),
-    m_chartLayout(new QVBoxLayout),
-    m_reportLabel(new QLabel)
+    m_chartLayout(new QVBoxLayout)
 {
     m_container->setFixedWidth(1200);
     m_chartLayout->addWidget(m_container);
 
-    m_reportLabel->setWordWrap(true);
-    m_reportLabel->setFixedWidth(250);
-
     QVBoxLayout* chartAndReportLayot = new QVBoxLayout();
-    chartAndReportLayot->addWidget(m_reportLabel, 0, Qt::AlignTop);
+    chartAndReportLayot->addWidget(createReportBox(), 0, Qt::AlignTop);
     chartAndReportLayot->addLayout(m_chartLayout);
 
     m_mainLayout->addWidget(createLeftLayout());
     m_mainLayout->addLayout(chartAndReportLayot);
 
     setupChart();
-
-    if (m_model)
-        m_reportLabel->setText(m_model->reportString(m_isTest));
 
     connect(m_solveBtn, &QPushButton::clicked, this, &DirichletWidget::onSolveButtonClicked);
 }
@@ -208,7 +204,9 @@ void DirichletWidget::onSolveButtonClicked()
     updateChart();
     emit solutionUpdated();
 
-    m_reportLabel->setText(m_model->reportString(m_isTest));
+    double extraError = 0.0; // если нужно — вычисли или получи из другого источника
+    QString report = m_model->reportString(m_isTest, extraError);
+    setReportText(report);
 }
 
 void DirichletWidget::updateChart()
@@ -234,4 +232,29 @@ void DirichletWidget::updateChart()
     {
         m_surface->addSeries(createSeries(m_model->solution(), "Численное решение"));
     }
+}
+
+QGroupBox* DirichletWidget::createReportBox()
+{
+    QGroupBox* box = new QGroupBox();
+    QVBoxLayout* layout = new QVBoxLayout(box);
+    layout->setContentsMargins(5, 5, 5, 5);
+
+    m_reportEdit = new QTextEdit;
+    m_reportEdit->setReadOnly(true);
+    m_reportEdit->setFont(QFont("Courier"));
+
+    m_reportEdit->setHtml(R"(
+<font color="#888">Здесь будет справка...</font><br>
+<font color="#888">Нажмите "Запустить", чтобы начать расчёт.</font>
+)");
+
+    layout->addWidget(m_reportEdit);
+
+    return box;
+}
+
+void DirichletWidget::setReportText(const QString& text)
+{
+    m_reportEdit->setPlainText(text);
 }
