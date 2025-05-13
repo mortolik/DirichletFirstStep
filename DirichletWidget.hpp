@@ -62,4 +62,5 @@ private:
     QGroupBox* createLeftLayout();
     void updateChart();
     QGroupBox *createReportBox();
+    QGroupBox* createChartBox();
 };

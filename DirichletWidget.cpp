@@ -19,17 +19,15 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     m_model(model),
     m_isTest(isTest),
     m_surface(new Q3DSurface),
-    m_container(QWidget::createWindowContainer(m_surface, this)),
+    m_container(nullptr),
     m_mainLayout(new QHBoxLayout(this)),
     m_chartLayout(new QVBoxLayout)
 {
-    m_container->setFixedWidth(1200);
-    m_chartLayout->addWidget(m_container);
-
     QVBoxLayout* chartAndReportLayot = new QVBoxLayout();
     chartAndReportLayot->addWidget(createReportBox(), 0, Qt::AlignTop);
-    chartAndReportLayot->addLayout(m_chartLayout);
-
+    chartAndReportLayot->addWidget(createChartBox());
+    chartAndReportLayot->setStretch(0, 0);
+    chartAndReportLayot->setStretch(1, 1);
     m_mainLayout->addWidget(createLeftLayout());
     m_mainLayout->addLayout(chartAndReportLayot);
 
@@ -257,4 +255,16 @@ QGroupBox* DirichletWidget::createReportBox()
 void DirichletWidget::setReportText(const QString& text)
 {
     m_reportEdit->setPlainText(text);
+}
+
+QGroupBox* DirichletWidget::createChartBox()
+{
+    QGroupBox* box = new QGroupBox();
+    QVBoxLayout* layout = new QVBoxLayout(box);
+    layout->setContentsMargins(5, 5, 5, 5);
+
+    m_container = QWidget::createWindowContainer(m_surface, this);
+    layout->addWidget(m_container);
+
+    return box;
 }
