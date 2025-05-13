@@ -6,6 +6,7 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QBoxLayout>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
@@ -24,7 +25,7 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
 
     m_reportLabel->setWordWrap(true);
     m_reportLabel->setFixedWidth(250);
-    m_mainLayout->addWidget(createSettingsGroup());
+    m_mainLayout->addWidget(createLeftLayout());
     m_mainLayout->addWidget(m_reportLabel, 0, Qt::AlignTop);
 
     m_mainLayout->addLayout(m_chartLayout);
@@ -160,6 +161,20 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     layout->addWidget(createLabeledWidget("Точность ", m_epsParam, 80));
     layout->addWidget(createLabeledWidget("Кол-во шагов ", m_stepsParam, 80));
     layout->addWidget(createLabeledWidget("Omega ", m_omegaParam, 80));
+
+    return box;
+}
+
+QGroupBox *DirichletWidget::createLeftLayout()
+{
+    QGroupBox* box = new QGroupBox(this);
+    box->setMaximumWidth(185);
+    QVBoxLayout* layout = new QVBoxLayout(box);
+
+    layout->addWidget(createSettingsGroup());
+
+    m_solveBtn = new QPushButton("Запустить");
+    layout->addWidget(m_solveBtn);
 
     return box;
 }

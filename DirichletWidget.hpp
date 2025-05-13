@@ -5,9 +5,10 @@
 #include <QtDataVisualization/QSurfaceDataProxy>
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
-QT_FORWARD_DECLARE_CLASS(QGroupBox)
 QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QGroupBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QDoubleSpinBox)
 QT_FORWARD_DECLARE_CLASS(DirichletSolverModel)
 
@@ -39,7 +40,11 @@ private:
     QSpinBox* m_stepsParam {nullptr};
     QDoubleSpinBox* m_omegaParam {nullptr};
 
+    QPushButton* m_solveBtn {nullptr};
+
     void setupChart();
     QSurface3DSeries *createSeries(const QVector<QVector<double>> &data, const QString &name);
+
     QGroupBox* createSettingsGroup();
+    QGroupBox* createLeftLayout();
 };
