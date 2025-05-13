@@ -86,6 +86,13 @@ QGroupBox *DirichletDisplayWidget::createTable()
     layout->setContentsMargins(5, 5, 5, 5);
 
     m_table = new QTableWidget;
+    m_table->setStyleSheet(
+        "QTableWidget {"
+        "    border-style: solid;"
+        "    border-width: 1px;"
+        "    border-color: #dcdcdc;"
+        "}"
+        );
     layout->addWidget(m_table);
 
     return box;

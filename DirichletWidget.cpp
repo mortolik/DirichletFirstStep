@@ -241,13 +241,20 @@ QGroupBox* DirichletWidget::createReportBox()
     layout->setContentsMargins(5, 5, 5, 5);
 
     m_reportEdit = new QTextEdit;
+    m_reportEdit->setStyleSheet(
+        "QTextEdit {"
+        "    border-style: solid;"
+        "    border-width: 1px;"
+        "    border-color: #dcdcdc;"
+        "}"
+        );
     m_reportEdit->setReadOnly(true);
     m_reportEdit->setFont(QFont("Courier"));
     
     m_reportEdit->setHtml(R"(
-<font color="#888">Здесь будет справка...</font><br>
-<font color="#888">Нажмите "Запустить", чтобы начать расчёт.</font>
-)");
+    <font color="#888">Здесь будет справка...</font><br>
+    <font color="#888">Нажмите "Запустить", чтобы начать расчёт.</font>
+    )");
 
     layout->addWidget(m_reportEdit);
 
