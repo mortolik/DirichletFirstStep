@@ -12,6 +12,10 @@ DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool
     m_chart = new DirichletWidget(m_model, m_isTest, this);
     m_layout->addWidget(m_chart, 1);
     m_layout->addWidget(m_table, 1);
+
+    connect(m_chart, &DirichletWidget::solutionUpdated, this, &DirichletDisplayWidget::onSolutionUpdated);
+    updateTable();
+
 }
 
 void DirichletDisplayWidget::fillTable(const QVector<QVector<double>> &data)
@@ -46,4 +50,30 @@ void DirichletDisplayWidget::fillTable(const QVector<QVector<double>> &data)
     m_table->horizontalHeader()->setStretchLastSection(true);
     m_table->resizeColumnsToContents();
     m_table->resizeRowsToContents();
+}
+
+void DirichletDisplayWidget::updateTable()
+{
+    QVector<QVector<double>> data;
+
+    if (m_isTest)
+        data = m_model->exactSolution(); // Можно использовать solution() или exactSolution()
+    else
+        data = m_model->solution();
+
+    if (data.isEmpty()) {
+        m_table->clear();
+        m_table->setRowCount(0);
+        m_table->setColumnCount(0);
+        m_table->setHorizontalHeaderItem(0, new QTableWidgetItem("Нет данных"));
+        m_table->setVerticalHeaderItem(0, new QTableWidgetItem("Нажмите 'Запустить'"));
+        return;
+    }
+
+    fillTable(data);
+}
+
+void DirichletDisplayWidget::onSolutionUpdated()
+{
+    updateTable();
 }

@@ -1,6 +1,6 @@
 #include "mainwindow.h"
-#include "DirichletDisplayWidget.hpp"
 #include "DirichletSolverModel.hpp"
+#include "DirichletDisplayWidget.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -18,34 +18,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupTestProblem()
 {
-    int n = 50;
-    int m = 50;
-    double omega = 1.8;
-    double eps = 1e-6;
-    int maxIter = 10000;
-
-    m_testModel->setup(n, m, omega, eps, maxIter);
-    m_testModel->solveTestProblem();
-
     auto *display = new DirichletDisplayWidget(m_testModel, true, this);
     m_tabWidget->addTab(display, "Тестовая задача");
 }
 
 void MainWindow::setupMainProblem()
 {
-    int n = 50;
-    int m = 50;
-    double omega = 1.8;
-    double eps = 1e-6;
-    int maxIter = 10000;
-
-    m_mainModel->setup(n, m, omega, eps, maxIter);
-    m_mainModel->solveMainProblem();
-
     auto *display = new DirichletDisplayWidget(m_mainModel, false, this);
     m_tabWidget->addTab(display, "Основная задача");
 }
-
 
 MainWindow::~MainWindow()
 {

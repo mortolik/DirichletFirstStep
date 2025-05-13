@@ -11,6 +11,8 @@ class DirichletDisplayWidget : public QWidget
 public:
     DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent = nullptr);
 
+private slots:
+    void onSolutionUpdated();
 private:
     DirichletSolverModel *m_model;
     bool m_isTest;
@@ -20,5 +22,6 @@ private:
     QHBoxLayout *m_layout;
 
     void fillTable(const QVector<QVector<double>> &data);
+    void updateTable();
 };
 

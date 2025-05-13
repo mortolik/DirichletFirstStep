@@ -22,6 +22,12 @@ public:
 
     DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent = nullptr);
 
+private slots:
+    void onSolveButtonClicked();
+
+signals:
+    void solutionUpdated();
+
 private:
     DirichletSolverModel *m_model = nullptr;
     const QVector<QVector<double>> *m_dataOnly = nullptr;
@@ -47,4 +53,5 @@ private:
 
     QGroupBox* createSettingsGroup();
     QGroupBox* createLeftLayout();
+    void updateChart();
 };
