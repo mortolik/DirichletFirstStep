@@ -9,11 +9,12 @@ MainWindow::MainWindow(QWidget *parent)
     m_mainModel(new DirichletSolverModel(this))
 {
     setCentralWidget(m_tabWidget);
-    resize(1920, 1080);
+    setMinimumSize(800, 600);
     setWindowTitle("Лабораторная работа №1 - Задача Дирихле (вариант 4)");
 
     setupTestProblem();
     setupMainProblem();
+    showMaximized();
 }
 
 void MainWindow::setupTestProblem()
