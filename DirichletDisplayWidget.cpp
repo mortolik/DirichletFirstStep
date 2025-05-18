@@ -12,71 +12,63 @@ DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_chart = new DirichletWidget(m_model, m_isTest, this);
     m_layout->addWidget(m_chart, 1);
-    createTable();
+    createTableBox();
 
     connect(m_chart, &DirichletWidget::solutionUpdated, this, &DirichletDisplayWidget::onSolutionUpdated);
-    updateTable();
-
+    //updateTable();
 }
 
-QTableWidget *DirichletDisplayWidget::tableWidget()
+QTabWidget *DirichletDisplayWidget::tableWidget()
 {
-    return m_table;
+    return m_tableTabs;
 }
 
-void DirichletDisplayWidget::fillTable(const QVector<QVector<double>> &data)
+void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVector<double>> &data)
 {
     int cols = data.size();
     int rows = data[0].size();
 
-    m_table->setRowCount(rows);
-    m_table->setColumnCount(cols + 1);
+    table->setRowCount(rows);
+    table->setColumnCount(cols + 1);
+    table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
 
-    m_table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
     for (int i = 0; i < cols; ++i)
     {
         double x = m_model->a() + i * m_model->h();
-        m_table->setHorizontalHeaderItem(i + 1, new QTableWidgetItem(QString::number(x, 'f', 2)));
+        table->setHorizontalHeaderItem(i + 1, new QTableWidgetItem(QString::number(x, 'f', 2)));
     }
 
     for (int j = 0; j < rows; ++j)
     {
         double y = m_model->c() + j * m_model->k();
-        m_table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 2)));
+        table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 2)));
 
         for (int i = 0; i < cols; ++i)
         {
             QString val = QString::number(data[i][j], 'f', 4);
             auto *item = new QTableWidgetItem(val);
             item->setTextAlignment(Qt::AlignCenter);
-            m_table->setItem(j, i + 1, item);
+            table->setItem(j, i + 1, item);
         }
     }
 
-    m_table->horizontalHeader()->setStretchLastSection(true);
-    m_table->resizeColumnsToContents();
-    m_table->resizeRowsToContents();
+    table->horizontalHeader()->setStretchLastSection(true);
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
 }
 
 void DirichletDisplayWidget::updateTable()
 {
-    QVector<QVector<double>> data;
-
     if (m_isTest)
-        data = m_model->exactSolution();
-    else
-        data = m_model->solution();
-
-    if (data.isEmpty()) {
-        m_table->clear();
-        m_table->setRowCount(0);
-        m_table->setColumnCount(0);
-        m_table->setHorizontalHeaderItem(0, new QTableWidgetItem("Нет данных"));
-        m_table->setVerticalHeaderItem(0, new QTableWidgetItem("Нажмите 'Запустить'"));
-        return;
+    {
+        fillTable(m_tableUStar, m_model->exactSolution());
+        fillTable(m_tableV, m_model->solution());
+        fillTable(m_tableDiff, m_model->error());
     }
-
-    fillTable(data);
+    else
+    {
+        fillTable(m_tableV, m_model->solution());
+    }
 }
 
 void DirichletDisplayWidget::onSolutionUpdated()
@@ -84,21 +76,28 @@ void DirichletDisplayWidget::onSolutionUpdated()
     updateTable();
 }
 
-QGroupBox *DirichletDisplayWidget::createTable()
+QGroupBox *DirichletDisplayWidget::createTableBox()
 {
-    QGroupBox* box = new QGroupBox();
+    QGroupBox* box = new QGroupBox("Таблица значений");
     QVBoxLayout* layout = new QVBoxLayout(box);
     layout->setContentsMargins(5, 5, 5, 5);
 
-    m_table = new QTableWidget;
-    m_table->setStyleSheet(
-        "QTableWidget {"
-        "    border-style: solid;"
-        "    border-width: 1px;"
-        "    border-color: #dcdcdc;"
-        "}"
-        );
-    layout->addWidget(m_table);
+    m_tableTabs = new QTabWidget(this);
+    m_tableUStar = createEmptyTable();
+    m_tableV = createEmptyTable();
+    m_tableDiff = createEmptyTable();
 
+    m_tableTabs->addTab(m_tableUStar, "u*(x,y)");
+    m_tableTabs->addTab(m_tableV, "v(x,y)");
+    m_tableTabs->addTab(m_tableDiff, "|u* - v|");
+
+    layout->addWidget(m_tableTabs);
     return box;
+}
+
+QTableWidget *DirichletDisplayWidget::createEmptyTable()
+{
+    auto *table = new QTableWidget;
+    table->setStyleSheet("QTableWidget { border: 1px solid #ccc; }");
+    return table;
 }

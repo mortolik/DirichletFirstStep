@@ -10,7 +10,8 @@ class DirichletDisplayWidget : public QWidget
 
 public:
     DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent = nullptr);
-    QTableWidget* tableWidget();
+    void updateTable();
+    QTabWidget* tableWidget();
 private slots:
     void onSolutionUpdated();
 private:
@@ -18,11 +19,15 @@ private:
     bool m_isTest;
 
     DirichletWidget *m_chart;
-    QTableWidget *m_table;
+    QTabWidget *m_tableTabs;
     QHBoxLayout *m_layout;
 
-    QGroupBox* createTable();
-    void fillTable(const QVector<QVector<double>> &data);
-    void updateTable();
+    QTableWidget *m_tableUStar;
+    QTableWidget *m_tableV;
+    QTableWidget *m_tableDiff;
+
+    QGroupBox *createTableBox();
+    QTableWidget *createEmptyTable();
+    void fillTable(QTableWidget *table, const QVector<QVector<double>> &data);
 };
 
