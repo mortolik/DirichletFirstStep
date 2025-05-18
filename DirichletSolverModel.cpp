@@ -94,6 +94,7 @@ void DirichletSolverModel::initialize()
 
 void DirichletSolverModel::solveTestProblem()
 {
+    double maxResidual = 0.0;
     for (int i = 0; i <= m_n; ++i)
     {
         double x = m_a + i * m_h;
@@ -125,6 +126,7 @@ void DirichletSolverModel::solveTestProblem()
     bool stop = false;
     while (!stop && iter < m_maxIter)
     {
+        double maxResidual = 0.0;
         stop = true;
         for (int i = 1; i < m_n; ++i)
         {
@@ -142,24 +144,54 @@ void DirichletSolverModel::solveTestProblem()
                 double uNew = (1.0 - m_omega)*m_u[i][j]
                               + m_omega*(rhs/denom);
 
-                if (qAbs(uNew - m_u[i][j]) > m_eps)
+                double diff = qAbs(uNew - m_u[i][j]);
+                if (diff > m_eps)
+                {
                     stop = false;
+
+                }
+                maxResidual = qMax(maxResidual, diff);
 
                 m_u[i][j] = uNew;
             }
         }
         ++iter;
     }
+    m_lastIter = iter;
+    m_lastResidual = maxResidual;
+}
+
+double DirichletSolverModel::computeInitialResidual() const
+{
+    double maxR = 0.0;
+    for (int i = 1; i < m_n; ++i)
+    {
+        for (int j = 1; j < m_m; ++j)
+        {
+            double x = m_a + i * m_h;
+            double y = m_c + j * m_k;
+
+            double laplace =
+                (m_u[i+1][j] - 2*m_u[i][j] + m_u[i-1][j]) / (m_h * m_h) +
+                (m_u[i][j+1] - 2*m_u[i][j] + m_u[i][j-1]) / (m_k * m_k);
+
+            double R = laplace - f(x, y);
+            maxR = qMax(maxR, qAbs(R));
+        }
+    }
+    return maxR;
 }
 
 void DirichletSolverModel::solveMainProblem()
 {
     int iter = 0;
     bool stop = false;
+    double maxResidual = 0.0;
 
     while (!stop && iter < m_maxIter)
     {
         stop = true;
+        maxResidual = 0.0;
 
         for (int i = 1; i < m_n; ++i)
         {
@@ -175,10 +207,13 @@ void DirichletSolverModel::solveMainProblem()
                 double denom = 2.0 * (1.0 / (m_h * m_h) + 1.0 / (m_k * m_k));
                 double uNew = (1.0 - m_omega) * m_u[i][j] + m_omega * rhs / denom;
 
-                if (qAbs(uNew - m_u[i][j]) > m_eps)
+                double diff = qAbs(uNew - m_u[i][j]);
+                if (diff > m_eps)
                 {
                     stop = false;
+
                 }
+                maxResidual = qMax(maxResidual, diff);
 
                 m_u[i][j] = uNew;
             }
@@ -186,6 +221,8 @@ void DirichletSolverModel::solveMainProblem()
 
         ++iter;
     }
+    m_lastIter = iter;
+    m_lastResidual = maxResidual;
 }
 
 QVector<QVector<double>> DirichletSolverModel::error() const
@@ -290,8 +327,10 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << (data.isTest ? "Справка по тестовой задаче:" : "Справка по основной задаче:");
     lines << QString("Сетка: n = %1, m = %2").arg(data.n).arg(data.m);
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
+    lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
     lines << "Начальное приближение: нулевое";
+    lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
 
     if (data.isTest && data.maxError >= 0)
     {
