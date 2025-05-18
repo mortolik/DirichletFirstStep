@@ -34,8 +34,8 @@ public:
         bool isTest = true;
     };
 
-    QString reportString(bool isTestTask = true, double extraError = -1.0) const;
-    ReportData generateReportData(bool isTestTask = true, double extraError = -1.0) const;
+    QString reportString(bool isTestTask = true) const;
+    ReportData generateReportData(bool isTestTask = true) const;
     double a() const { return m_a; }
     double b() const { return m_b; }
     double c() const { return m_c; }
@@ -84,6 +84,6 @@ private:
 
     double fTest(double x, double y) const;
 
-
+    QPair<double, double> maxErrorPointCompare() const;
 
 };

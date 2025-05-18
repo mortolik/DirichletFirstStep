@@ -215,8 +215,7 @@ void DirichletWidget::onSolveButtonClicked()
     updateChart();
     emit solutionUpdated();
 
-    double extraError = 0.0;
-    QString report = m_model->reportString(m_isTest, extraError);
+    QString report = m_model->reportString(m_isTest);
     setReportText(report);
 }
 

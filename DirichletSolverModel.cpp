@@ -259,7 +259,7 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
     return coarseVsFine;
 }
 
-DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool isTestTask, double extraError) const
+DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool isTestTask) const
 {
     ReportData data;
     data.n = m_n;
@@ -273,14 +273,18 @@ DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool i
         data.maxError = maxError();
 
     if (!isTestTask)
-        data.accuracy = extraError;
+    {
+        double eps2 = 0.0;
+        compareWithFinerGrid(m_n * 2, m_m * 2, eps2);
+        data.accuracy = eps2;
+    }
 
     return data;
 }
 
-QString DirichletSolverModel::reportString(bool isTestTask, double extraError) const
+QString DirichletSolverModel::reportString(bool isTestTask) const
 {
-    ReportData data = generateReportData(isTestTask, extraError);
+    ReportData data = generateReportData(isTestTask);
 
     QStringList lines;
     lines << (data.isTest ? "Справка по тестовой задаче:" : "Справка по основной задаче:");
@@ -299,10 +303,42 @@ QString DirichletSolverModel::reportString(bool isTestTask, double extraError) c
     if (!data.isTest && data.accuracy >= 0)
     {
         lines << QString("Оценка точности ε₂ = %1").arg(data.accuracy, 0, 'e', 3);
+        auto [xmax, ymax] = maxErrorPointCompare();
+        lines << QString("Максимальное отклонение в точке: x = %1, y = %2").arg(xmax).arg(ymax);
         lines << "Оценка: ε₂ = max |v(x, y) − v₂(x, y)| между сетками (n, m) и (2n, 2m)";
     }
 
     return lines.join("\n");
+}
+
+QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
+{
+    DirichletSolverModel fineModel;
+    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
+    fineModel.solveMainProblem();
+
+    QVector<QVector<double>> fineU = fineModel.solution();
+
+    double maxErr = 0.0;
+    int maxI = 0, maxJ = 0;
+
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
+            double diff = qAbs(m_u[i][j] - fineU[i * 2][j * 2]);
+            if (diff > maxErr)
+            {
+                maxErr = diff;
+                maxI = i;
+                maxJ = j;
+            }
+        }
+    }
+
+    double x = m_a + maxI * m_h;
+    double y = m_c + maxJ * m_k;
+    return qMakePair(x, y);
 }
 
 QPair<double, double> DirichletSolverModel::maxErrorPoint() const
