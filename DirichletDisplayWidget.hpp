@@ -26,6 +26,9 @@ private:
     QTableWidget *m_tableV;
     QTableWidget *m_tableDiff;
 
+    QTableWidget *m_tableV2;
+    QTableWidget *m_tableVDiff;
+
     QGroupBox *createTableBox();
     QTableWidget *createEmptyTable();
     void fillTable(QTableWidget *table, const QVector<QVector<double>> &data);

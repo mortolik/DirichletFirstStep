@@ -134,14 +134,15 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     m_mParam->setValue(100);
 
     m_stepsParam->setRange(0, 1000000);
-    m_stepsParam->setValue(10000);
+    m_stepsParam->setValue(500);
 
     m_epsParam->setDecimals(7);
-    m_epsParam->setValue(0.0000005);
+    m_epsParam->setValue(0.00000001);
     m_epsParam->setSingleStep(0.001);
-    m_epsParam->setRange(0.0000001, 1.0);
+    m_epsParam->setRange(0.00000001, 1.0);
 
     m_optimalCheckBox = new QCheckBox();
+    m_optimalCheckBox->setChecked(true);
 
     m_omegaParam->setRange(0.1, 2.0);
     m_omegaParam->setSingleStep(0.1);

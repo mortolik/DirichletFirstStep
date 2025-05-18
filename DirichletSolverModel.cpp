@@ -340,3 +340,27 @@ double DirichletSolverModel::computeOptimalOmega()
     return m_omega;
 }
 
+DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComparison() const
+{
+    DirichletSolverModel fineModel;
+    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
+    fineModel.solveMainProblem();
+
+    QVector<QVector<double>> v2Full = fineModel.solution();
+
+    QVector<QVector<double>> v(m_n + 1, QVector<double>(m_m + 1));
+    QVector<QVector<double>> diff(m_n + 1, QVector<double>(m_m + 1));
+
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
+            v[i][j] = m_u[i][j];
+            double v2value = v2Full[i * 2][j * 2];
+            diff[i][j] = qAbs(v[i][j] - v2value);
+        }
+    }
+
+    return { v, v2Full, diff };
+}
+

@@ -67,7 +67,10 @@ void DirichletDisplayWidget::updateTable()
     }
     else
     {
-        fillTable(m_tableV, m_model->solution());
+        auto result = m_model->computeFinerGridComparison();
+        fillTable(m_tableV, result.v);
+        fillTable(m_tableV2, result.v2);
+        fillTable(m_tableVDiff, result.diff);
     }
 }
 
@@ -83,13 +86,27 @@ QGroupBox *DirichletDisplayWidget::createTableBox()
     layout->setContentsMargins(5, 5, 5, 5);
 
     m_tableTabs = new QTabWidget(this);
-    m_tableUStar = createEmptyTable();
-    m_tableV = createEmptyTable();
-    m_tableDiff = createEmptyTable();
 
-    m_tableTabs->addTab(m_tableUStar, "u*(x,y)");
-    m_tableTabs->addTab(m_tableV, "v(x,y)");
-    m_tableTabs->addTab(m_tableDiff, "|u* - v|");
+    if (m_isTest)
+    {
+        m_tableUStar = createEmptyTable();
+        m_tableV = createEmptyTable();
+        m_tableDiff = createEmptyTable();
+
+        m_tableTabs->addTab(m_tableUStar, "u*(x,y)");
+        m_tableTabs->addTab(m_tableV, "v(x,y)");
+        m_tableTabs->addTab(m_tableDiff, "|u* - v|");
+    }
+    else
+    {
+        m_tableV = createEmptyTable();
+        m_tableV2 = createEmptyTable();
+        m_tableVDiff = createEmptyTable();
+
+        m_tableTabs->addTab(m_tableV, "v(x,y)");
+        m_tableTabs->addTab(m_tableV2, "v₂(x,y)");
+        m_tableTabs->addTab(m_tableVDiff, "|v - v₂|");
+    }
 
     layout->addWidget(m_tableTabs);
     return box;

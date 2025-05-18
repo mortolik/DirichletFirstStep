@@ -45,7 +45,14 @@ public:
 
     double computeOptimalOmega();
 
+    struct FinerGridResult
+    {
+        QVector<QVector<double>> v;
+        QVector<QVector<double>> v2;
+        QVector<QVector<double>> diff;
+    };
 
+    DirichletSolverModel::FinerGridResult computeFinerGridComparison() const;
 private:
     int m_n;
     int m_m;
@@ -76,4 +83,7 @@ private:
     QPair<double, double> maxErrorPoint() const;
 
     double fTest(double x, double y) const;
+
+
+
 };
