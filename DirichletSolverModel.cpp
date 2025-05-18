@@ -259,7 +259,7 @@ QString DirichletSolverModel::reportString(bool isTestTask, double extraError) c
     lines << QString("Сетка: n = %1, m = %2").arg(data.n).arg(data.m);
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
-    lines << "Начальное приближение: интерполяция граничных условий";
+    lines << "Начальное приближение: нулевое";
 
     if (data.isTest && data.maxError >= 0)
     {
