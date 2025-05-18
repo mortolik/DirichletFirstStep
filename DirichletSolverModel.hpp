@@ -75,4 +75,5 @@ private:
     double mu4(double x) const;
     QPair<double, double> maxErrorPoint() const;
 
+    double fTest(double x, double y) const;
 };

@@ -41,6 +41,11 @@ double DirichletSolverModel::f(double x, double y) const
     return -qExp(-x * y * y);
 }
 
+double DirichletSolverModel::fTest(double x, double y) const
+{
+    return M_PI*M_PI*(x*x + y*y) * qSin(M_PI * x * y);
+}
+
 double DirichletSolverModel::uStar(double x, double y) const
 {
     return qSin(M_PI * x * y);
@@ -68,58 +73,81 @@ double DirichletSolverModel::mu4(double x) const
 
 void DirichletSolverModel::initialize()
 {
+    // граничные условия — именно так, как было изначально
     for (int i = 0; i <= m_n; ++i)
     {
         double x = m_a + i * m_h;
-        m_u[i][0] = mu3(x);
-        m_u[i][m_m] = mu4(x);
-        m_uExact[i][0] = uStar(x, m_c);
-        m_uExact[i][m_m] = uStar(x, m_d);
+        m_u[i][0]       = mu3(x);
+        m_u[i][m_m]     = mu4(x);
+        m_uExact[i][0]  = uStar(x, m_c);
+        m_uExact[i][m_m]= uStar(x, m_d);
     }
-
     for (int j = 0; j <= m_m; ++j)
     {
         double y = m_c + j * m_k;
-        m_u[0][j] = mu1(y);
-        m_u[m_n][j] = mu2(y);
-        m_uExact[0][j] = uStar(m_a, y);
-        m_uExact[m_n][j] = uStar(m_b, y);
+        m_u[0][j]       = mu1(y);
+        m_u[m_n][j]     = mu2(y);
+        m_uExact[0][j]  = uStar(m_a, y);
+        m_uExact[m_n][j]= uStar(m_b, y);
     }
 }
 
 void DirichletSolverModel::solveTestProblem()
 {
+    for (int i = 0; i <= m_n; ++i)
+    {
+        double x = m_a + i * m_h;
+        m_u[i][0]      = uStar(x, m_c);
+        m_u[i][m_m]    = uStar(x, m_d);
+    }
+    for (int j = 0; j <= m_m; ++j)
+    {
+        double y = m_c + j * m_k;
+        m_u[0][j]      = uStar(m_a, y);
+        m_u[m_n][j]    = uStar(m_b, y);
+    }
+    for (int i = 1; i < m_n; ++i)
+        for (int j = 1; j < m_m; ++j)
+            m_u[i][j] = 0.0;
+
+    for (int i = 0; i <= m_n; ++i)
+        for (int j = 0; j <= m_m; ++j)
+        {
+            double x = m_a + i*m_h;
+            double y = m_c + j*m_k;
+            m_uExact[i][j] = uStar(x, y);
+        }
+
+    double h2 = m_h*m_h, k2 = m_k*m_k;
+    double denom = 2.0*(1.0/h2 + 1.0/k2);
+
     int iter = 0;
     bool stop = false;
-
     while (!stop && iter < m_maxIter)
     {
         stop = true;
-
         for (int i = 1; i < m_n; ++i)
         {
             for (int j = 1; j < m_m; ++j)
             {
-                double x = m_a + i * m_h;
-                double y = m_c + j * m_k;
+                double x = m_a + i*m_h;
+                double y = m_c + j*m_k;
 
-                double rhs = (m_u[i + 1][j] + m_u[i - 1][j]) / (m_h * m_h)
-                             + (m_u[i][j + 1] + m_u[i][j - 1]) / (m_k * m_k)
-                             - f(x, y);
+                double fstar = M_PI*M_PI*(x*x + y*y)*qSin(M_PI*x*y);
 
-                double denom = 2.0 * (1.0 / (m_h * m_h) + 1.0 / (m_k * m_k));
-                double uNew = (1.0 - m_omega) * m_u[i][j] + m_omega * rhs / denom;
+                double rhs = (m_u[i+1][j] + m_u[i-1][j])/h2
+                             + (m_u[i][j+1] + m_u[i][j-1])/k2
+                             - fstar;
+
+                double uNew = (1.0 - m_omega)*m_u[i][j]
+                              + m_omega*(rhs/denom);
 
                 if (qAbs(uNew - m_u[i][j]) > m_eps)
-                {
                     stop = false;
-                }
 
                 m_u[i][j] = uNew;
-                m_uExact[i][j] = uStar(x, y);
             }
         }
-
         ++iter;
     }
 }
