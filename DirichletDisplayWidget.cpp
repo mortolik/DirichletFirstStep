@@ -63,7 +63,7 @@ void DirichletDisplayWidget::updateTable()
     QVector<QVector<double>> data;
 
     if (m_isTest)
-        data = m_model->exactSolution(); // Можно использовать solution() или exactSolution()
+        data = m_model->exactSolution();
     else
         data = m_model->solution();
 

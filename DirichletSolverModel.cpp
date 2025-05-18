@@ -205,7 +205,7 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
 {
     DirichletSolverModel fineModel;
     fineModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
-    fineModel.solveMainProblem(); // основная задача без точного решения
+    fineModel.solveMainProblem();
 
     double hRatio = double(finerN) / m_n;
     double kRatio = double(finerM) / m_m;
