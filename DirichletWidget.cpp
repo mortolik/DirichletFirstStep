@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QSpinBox>
 #include <QGroupBox>
+#include <QCheckBox>
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QBoxLayout>
@@ -140,6 +141,8 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     m_epsParam->setSingleStep(0.001);
     m_epsParam->setRange(0.0000001, 1.0);
 
+    m_optimalCheckBox = new QCheckBox();
+
     m_omegaParam->setRange(0.1, 2.0);
     m_omegaParam->setSingleStep(0.1);
     m_omegaParam->setValue(1.8);
@@ -166,6 +169,8 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     layout->addWidget(nmContainer);
     layout->addWidget(createLabeledWidget("Точность ", m_epsParam, 80));
     layout->addWidget(createLabeledWidget("Кол-во шагов ", m_stepsParam, 80));
+
+    layout->addWidget(createLabeledWidget("Оптимальный ω ", m_optimalCheckBox, 80));
     layout->addWidget(createLabeledWidget("Omega ", m_omegaParam, 80));
 
     return box;
@@ -192,9 +197,14 @@ void DirichletWidget::onSolveButtonClicked()
     int m = m_mParam->value();
     double eps = m_epsParam->value();
     int maxIter = m_stepsParam->value();
-    double omega = m_omegaParam->value();
 
+    double omega = m_omegaParam->value();
     m_model->setup(n, m, omega, eps, maxIter);
+    if (m_optimalCheckBox->isChecked())
+    {
+        double omegaOpt = m_model->computeOptimalOmega();
+        m_model->setup(n, m, omegaOpt, eps, maxIter);
+    }
 
     if (m_isTest)
         m_model->solveTestProblem();
@@ -204,7 +214,7 @@ void DirichletWidget::onSolveButtonClicked()
     updateChart();
     emit solutionUpdated();
 
-    double extraError = 0.0; // если нужно — вычисли или получи из другого источника
+    double extraError = 0.0;
     QString report = m_model->reportString(m_isTest, extraError);
     setReportText(report);
 }

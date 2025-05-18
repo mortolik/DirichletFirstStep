@@ -304,4 +304,11 @@ QPair<double, double> DirichletSolverModel::maxErrorPoint() const
     return qMakePair(x, y);
 }
 
+double DirichletSolverModel::computeOptimalOmega()
+{
+    double rho = std::cos(M_PI / m_n) + std::cos(M_PI / m_m);
+    double value = std::sqrt(1 - std::pow(rho / 2.0, 2));
+    m_omega = 2.0 / (1.0 + value);
+    return m_omega;
+}
 

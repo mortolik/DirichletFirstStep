@@ -43,6 +43,8 @@ public:
     double h() const { return m_h; }
     double k() const { return m_k; }
 
+    double computeOptimalOmega();
+
 
 private:
     int m_n;

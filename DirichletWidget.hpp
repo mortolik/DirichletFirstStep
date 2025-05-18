@@ -8,6 +8,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QGroupBox)
@@ -16,6 +17,7 @@ QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QDoubleSpinBox)
 QT_FORWARD_DECLARE_CLASS(DirichletSolverModel)
+
 
 using namespace QtDataVisualization;
 
@@ -50,6 +52,7 @@ private:
     QDoubleSpinBox* m_epsParam {nullptr};
     QSpinBox* m_stepsParam {nullptr};
     QDoubleSpinBox* m_omegaParam {nullptr};
+    QCheckBox* m_optimalCheckBox {nullptr};
 
     QPushButton* m_solveBtn {nullptr};
 
