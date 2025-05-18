@@ -28,5 +28,7 @@ private:
     DirichletSolverModel *m_mainModel;
     DirichletWidget *m_testWidget;
     DirichletWidget *m_mainWidget;
+    QDockWidget* m_tableDock {nullptr};
+    void updateDockWidget(int index);
 };
 #endif // MAINWINDOW_H

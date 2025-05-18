@@ -1,7 +1,7 @@
-#include "DirichletDisplayWidget.hpp"
-#include "DirichletSolverModel.hpp"
-#include "qgroupbox.h"
+#include <QGroupBox>
 #include <QHeaderView>
+#include "DirichletSolverModel.hpp"
+#include "DirichletDisplayWidget.hpp"
 
 DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
@@ -12,11 +12,16 @@ DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool
     m_layout->setContentsMargins(10, 10, 10, 10);
     m_chart = new DirichletWidget(m_model, m_isTest, this);
     m_layout->addWidget(m_chart, 1);
-    m_layout->addWidget(createTable(), 1);
+    createTable();
 
     connect(m_chart, &DirichletWidget::solutionUpdated, this, &DirichletDisplayWidget::onSolutionUpdated);
     updateTable();
 
+}
+
+QTableWidget *DirichletDisplayWidget::tableWidget()
+{
+    return m_table;
 }
 
 void DirichletDisplayWidget::fillTable(const QVector<QVector<double>> &data)

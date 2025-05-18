@@ -10,7 +10,7 @@ class DirichletDisplayWidget : public QWidget
 
 public:
     DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent = nullptr);
-
+    QTableWidget* tableWidget();
 private slots:
     void onSolutionUpdated();
 private:
