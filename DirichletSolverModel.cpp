@@ -384,10 +384,9 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     if (!data.isTest && data.accuracy >= 0)
     {
         lines << "Начальное приближение: среднее";
-        lines << QString("Оценка точности ε₂ = %1").arg(data.accuracy, 0, 'e', 3);
+        lines << QString("Оценка точности ε₂ = max |v(x, y) − v₂(x, y)|  = %1").arg(data.accuracy, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPointCompare();
         lines << QString("Максимальное отклонение в точке: x = %1, y = %2").arg(xmax).arg(ymax);
-        lines << "Оценка: ε₂ = max |v(x, y) − v₂(x, y)| между сетками (n, m) и (2n, 2m)";
     }
 
     return lines.join("\n");
