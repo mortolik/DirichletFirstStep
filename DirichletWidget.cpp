@@ -115,7 +115,7 @@ QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &
 QGroupBox* DirichletWidget::createSettingsGroup()
 {
     QGroupBox* box = new QGroupBox("Параметры", this);
-    box->setMaximumSize(175, 150);
+    box->setFixedSize(190, 150);
 
     QVBoxLayout* layout = new QVBoxLayout(box);
     layout->setSpacing(5);
@@ -180,7 +180,7 @@ QGroupBox* DirichletWidget::createSettingsGroup()
 QGroupBox *DirichletWidget::createLeftLayout()
 {
     QGroupBox* box = new QGroupBox(this);
-    box->setMaximumWidth(185);
+    box->setMaximumWidth(200);
     QVBoxLayout* layout = new QVBoxLayout(box);
 
     layout->addWidget(createSettingsGroup(), 0, Qt::AlignTop);
