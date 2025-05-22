@@ -135,7 +135,7 @@ void DirichletSolverModel::solveTestProblem()
                 double x = m_a + i*m_h;
                 double y = m_c + j*m_k;
 
-                double fstar = M_PI*M_PI*(x*x + y*y)*qSin(M_PI*x*y);
+                double fstar = -fTest(x, y);
 
                 double rhs = (m_u[i+1][j] + m_u[i-1][j])/h2
                              + (m_u[i][j+1] + m_u[i][j-1])/k2
