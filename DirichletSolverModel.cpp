@@ -272,22 +272,39 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
     fineModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
-    double hRatio = double(finerN) / m_n;
-    double kRatio = double(finerM) / m_m;
-
     QVector<QVector<double>> fineU = fineModel.solution();
-    QVector<QVector<double>> coarseVsFine(m_n + 1, QVector<double>(m_m + 1, 0.0));
+    double fineH = (m_b - m_a) / finerN;
+    double fineK = (m_d - m_c) / finerM;
 
+    QVector<QVector<double>> coarseVsFine(m_n + 1, QVector<double>(m_m + 1, 0.0));
     eps2Out = 0.0;
 
     for (int i = 0; i <= m_n; ++i)
     {
         for (int j = 0; j <= m_m; ++j)
         {
-            int fi = i * hRatio;
-            int fj = j * kRatio;
+            double x = m_a + i * m_h;
+            double y = m_c + j * m_k;
 
-            double diff = qAbs(m_u[i][j] - fineU[fi][fj]);
+            int fi = static_cast<int>((x - m_a) / fineH);
+            int fj = static_cast<int>((y - m_c) / fineK);
+
+            if (fi >= finerN || fj >= finerM) continue;
+
+            double dx = (x - (m_a + fi * fineH)) / fineH;
+            double dy = (y - (m_c + fj * fineK)) / fineK;
+
+            double v00 = fineU[fi][fj];
+            double v10 = fineU[fi + 1][fj];
+            double v01 = fineU[fi][fj + 1];
+            double v11 = fineU[fi + 1][fj + 1];
+
+            double interpVal = (1 - dx) * (1 - dy) * v00
+                               + dx * (1 - dy) * v10
+                               + (1 - dx) * dy * v01
+                               + dx * dy * v11;
+
+            double diff = qAbs(m_u[i][j] - interpVal);
             coarseVsFine[i][j] = diff;
             eps2Out = qMax(eps2Out, diff);
         }

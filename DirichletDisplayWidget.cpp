@@ -25,13 +25,13 @@ QTabWidget *DirichletDisplayWidget::tableWidget()
 
 void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVector<double>> &data)
 {
-    int cols = data.size();
-    int rows = data[0].size();
+    int rows = data.size();
+    int cols = data[0].size();
 
     table->setRowCount(rows);
     table->setColumnCount(cols + 1);
-    table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
 
+    table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
     for (int i = 0; i < cols; ++i)
     {
         double x = m_model->a() + i * m_model->h();
@@ -45,7 +45,7 @@ void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVecto
 
         for (int i = 0; i < cols; ++i)
         {
-            QString val = QString::number(data[i][j], 'f', 4);
+            QString val = QString::number(data[j][i], 'f', 4);
             auto *item = new QTableWidgetItem(val);
             item->setTextAlignment(Qt::AlignCenter);
             table->setItem(j, i + 1, item);
