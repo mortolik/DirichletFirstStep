@@ -371,11 +371,11 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
-    lines << "Начальное приближение: среднее";
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
 
     if (data.isTest && data.maxError >= 0)
     {
+        lines << "Начальное приближение: нулевое";
         lines << QString("Максимальная погрешность ε₁ = %1").arg(data.maxError, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPoint();
         lines << QString("Максимальное отклонение в точке: x = %1, y = %2").arg(xmax).arg(ymax);
@@ -383,6 +383,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
 
     if (!data.isTest && data.accuracy >= 0)
     {
+        lines << "Начальное приближение: среднее";
         lines << QString("Оценка точности ε₂ = %1").arg(data.accuracy, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPointCompare();
         lines << QString("Максимальное отклонение в точке: x = %1, y = %2").arg(xmax).arg(ymax);
