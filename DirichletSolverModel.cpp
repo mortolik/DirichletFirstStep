@@ -184,6 +184,8 @@ double DirichletSolverModel::computeInitialResidual() const
 
 void DirichletSolverModel::solveMainProblem()
 {
+    initializeInterior();
+
     int iter = 0;
     bool stop = false;
     double maxResidual = 0.0;
@@ -266,6 +268,29 @@ const QVector<QVector<double>> &DirichletSolverModel::exactSolution() const
     return m_uExact;
 }
 
+void DirichletSolverModel::initializeInterior()
+{
+    for (int i = 1; i < m_n; ++i)
+    {
+        double x = m_a + i * m_h;
+        for (int j = 1; j < m_m; ++j)
+        {
+            double y = m_c + j * m_k;
+
+            double left = mu1(y);
+            double right = mu2(y);
+            double bottom = mu3(x);
+            double top = mu4(x);
+
+            double tx = (x - m_a) / (m_b - m_a);
+            double ty = (y - m_c) / (m_d - m_c);
+
+            m_u[i][j] = (1 - tx) * left + tx * right + (1 - ty) * bottom + ty * top;
+            m_u[i][j] /= 2.0;
+        }
+    }
+}
+
 QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const
 {
     DirichletSolverModel fineModel;
@@ -346,7 +371,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
-    lines << "Начальное приближение: нулевое";
+    lines << "Начальное приближение: среднее";
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
 
     if (data.isTest && data.maxError >= 0)

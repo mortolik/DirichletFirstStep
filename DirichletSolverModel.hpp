@@ -90,4 +90,5 @@ private:
     QPair<double, double> maxErrorPointCompare() const;
 
     double computeInitialResidual() const;
+    void initializeInterior();
 };
