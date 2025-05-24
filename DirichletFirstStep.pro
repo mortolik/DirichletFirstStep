@@ -15,7 +15,6 @@ SOURCES += \
     DirichletSolverModel.cpp \
     DirichletSolverModel2.cpp \
     DirichletWidget.cpp \
-    TestProblem2Solver.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -24,7 +23,6 @@ HEADERS += \
     DirichletSolverModel.hpp \
     DirichletSolverModel2.hpp \
     DirichletWidget.hpp \
-    TestProblem2Solver.hpp \
     mainwindow.h
 
 FORMS += \
