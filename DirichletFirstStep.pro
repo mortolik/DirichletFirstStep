@@ -14,6 +14,7 @@ SOURCES += \
     Dirichle3StepModel.cpp \
     DirichletDisplayWidget.cpp \
     DirichletSolverModel.cpp \
+    DirichletSolverModel2.cpp \
     DirichletWidget.cpp \
     main.cpp \
     mainwindow.cpp
@@ -22,6 +23,7 @@ HEADERS += \
     Dirichle3StepModel.hpp \
     DirichletDisplayWidget.hpp \
     DirichletSolverModel.hpp \
+    DirichletSolverModel2.hpp \
     DirichletWidget.hpp \
     mainwindow.h
 
