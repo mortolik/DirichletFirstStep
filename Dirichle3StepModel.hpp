@@ -2,9 +2,11 @@
 #include <QObject>
 #include <QVector>
 
+#include "DirichletSolverModel.hpp"
+
 QT_FORWARD_DECLARE_CLASS(QString)
 
-class Dirichle3StepModel : public QObject
+class Dirichle3StepModel : public DirichletSolverModel
 {
     Q_OBJECT
 

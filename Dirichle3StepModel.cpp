@@ -4,7 +4,7 @@
 #include <QTextStream>
 
 Dirichle3StepModel::Dirichle3StepModel(QObject *parent)
-    : QObject(parent),
+    : DirichletSolverModel(parent),
     m_n(0),
     m_m(0),
     m_maxIter(10000),

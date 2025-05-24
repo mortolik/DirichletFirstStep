@@ -4,7 +4,7 @@
 #include <QTextStream>
 
 DirichletSolverModel2::DirichletSolverModel2(QObject *parent)
-    : QObject(parent),
+    : DirichletSolverModel(parent),
     m_n(0),
     m_m(0),
     m_maxIter(10000),

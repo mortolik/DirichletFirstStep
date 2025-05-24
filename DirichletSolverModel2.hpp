@@ -1,10 +1,10 @@
 #pragma once
 #include <QObject>
 #include <QVector>
-
+#include "DirichletSolverModel.hpp"
 QT_FORWARD_DECLARE_CLASS(QString)
 
-class DirichletSolverModel2 : public QObject
+class DirichletSolverModel2 : public DirichletSolverModel
 {
     Q_OBJECT
 
