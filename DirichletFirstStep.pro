@@ -13,14 +13,18 @@ CONFIG += c++17
 SOURCES += \
     DirichletDisplayWidget.cpp \
     DirichletSolverModel.cpp \
+    DirichletSolverModel2.cpp \
     DirichletWidget.cpp \
+    TestProblem2Solver.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     DirichletDisplayWidget.hpp \
     DirichletSolverModel.hpp \
+    DirichletSolverModel2.hpp \
     DirichletWidget.hpp \
+    TestProblem2Solver.hpp \
     mainwindow.h
 
 FORMS += \
