@@ -11,6 +11,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Dirichlet2step.cpp \
     DirichletDisplayWidget.cpp \
     DirichletSolverModel.cpp \
     DirichletWidget.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
+    Dirichlet2step.hpp \
     DirichletDisplayWidget.hpp \
     DirichletSolverModel.hpp \
     DirichletWidget.hpp \
