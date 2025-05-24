@@ -12,16 +12,20 @@ CONFIG += c++17
 
 SOURCES += \
     Dirichlet2step.cpp \
+    Dirichle3StepModel.cpp \
     DirichletDisplayWidget.cpp \
     DirichletSolverModel.cpp \
+    DirichletSolverModel2.cpp \
     DirichletWidget.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     Dirichlet2step.hpp \
+    Dirichle3StepModel.hpp \
     DirichletDisplayWidget.hpp \
     DirichletSolverModel.hpp \
+    DirichletSolverModel2.hpp \
     DirichletWidget.hpp \
     mainwindow.h
 
