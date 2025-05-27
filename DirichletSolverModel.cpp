@@ -296,13 +296,15 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
     fineModel.setup(finerN, finerM, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
-    QVector<QVector<double>> fineU = fineModel.solution();
+    const QVector<QVector<double>> &fineU = fineModel.solution();
+
     double fineH = (m_b - m_a) / finerN;
     double fineK = (m_d - m_c) / finerM;
 
     QVector<QVector<double>> coarseVsFine(m_n + 1, QVector<double>(m_m + 1, 0.0));
     eps2Out = 0.0;
 
+#pragma omp parallel for
     for (int i = 0; i <= m_n; ++i)
     {
         for (int j = 0; j <= m_m; ++j)
@@ -313,10 +315,14 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
             int fi = static_cast<int>((x - m_a) / fineH);
             int fj = static_cast<int>((y - m_c) / fineK);
 
-            if (fi >= finerN || fj >= finerM) continue;
+            if (fi < 0 || fi >= finerN || fj < 0 || fj >= finerM)
+                continue;
 
-            double dx = (x - (m_a + fi * fineH)) / fineH;
-            double dy = (y - (m_c + fj * fineK)) / fineK;
+            double x0 = m_a + fi * fineH;
+            double y0 = m_c + fj * fineK;
+
+            double dx = (x - x0) / fineH;
+            double dy = (y - y0) / fineK;
 
             double v00 = fineU[fi][fj];
             double v10 = fineU[fi + 1][fj];
@@ -328,14 +334,20 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
                                + (1 - dx) * dy * v01
                                + dx * dy * v11;
 
-            double diff = qAbs(m_u[i][j] - interpVal);
+            double diff = std::abs(m_u[i][j] - interpVal);
             coarseVsFine[i][j] = diff;
-            eps2Out = qMax(eps2Out, diff);
+
+#pragma omp critical
+            {
+                if (diff > eps2Out)
+                    eps2Out = diff;
+            }
         }
     }
 
     return coarseVsFine;
 }
+
 
 DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool isTestTask) const
 {
