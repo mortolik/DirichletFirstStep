@@ -212,8 +212,8 @@ void DirichletWidget::onSolveButtonClicked()
     else
         m_model->solveMainProblem();
 
-    updateChart();
-    emit solutionUpdated();
+    // updateChart();
+    // emit solutionUpdated();
 
     QString report = m_model->reportString(m_isTest);
     setReportText(report);
