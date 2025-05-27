@@ -85,20 +85,20 @@ QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &
     double c = 2.0;
     double d = 3.0;
 
-    double h = (b - a) / (rows - 1);
-    double k = (d - c) / (cols - 1);
+    double h = (b - a) / (cols - 1);
+    double k = (d - c) / (rows - 1);
 
     for (int i = 0; i < rows; ++i)
     {
-        QSurfaceDataRow *row = new QSurfaceDataRow(cols);
-        double x = a + i * h;
+        QSurfaceDataRow *row = new QSurfaceDataRow;
+        double z = c + i * k;
 
         for (int j = 0; j < cols; ++j)
         {
-            double y = c + j * k;
-            (*row)[j].setPosition(QVector3D(x, data[i][j], y));
+            double x = a + j * h;
+            double y = data[i][j];
+            row->append(QSurfaceDataItem(QVector3D(x, y, z)));
         }
-
         dataArray->append(row);
     }
 
