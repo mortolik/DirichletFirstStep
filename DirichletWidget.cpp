@@ -14,6 +14,10 @@
 #include <QFormLayout>
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QProgressDialog>
+#include "qprogressdialog.h"
 
 DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
@@ -70,6 +74,63 @@ void DirichletWidget::setupChart()
             m_surface->addSeries(createSeries(m_model->solution(), "Численное решение"));
         }
     }
+}
+
+void DirichletWidget::computeAccuracyAsync()
+{
+    if (!m_model) return;
+
+    // Создаём прогресс-диалог
+    if (m_progressDialog) {
+        m_progressDialog->close();
+        delete m_progressDialog;
+    }
+
+    m_progressDialog = new QProgressDialog("Оценка точности (ε₂)...", QString(), 0, 0, this);
+    m_progressDialog->setWindowModality(Qt::ApplicationModal);
+    m_progressDialog->setCancelButton(nullptr);
+    m_progressDialog->setMinimumDuration(0);
+    m_progressDialog->show();
+
+    // Watcher следит за завершением потока
+    if (m_accuracyWatcher)
+        delete m_accuracyWatcher;
+
+    m_accuracyWatcher = new QFutureWatcher<DirichletSolverModel::FinerGridResult>(this);
+
+    connect(m_accuracyWatcher, &QFutureWatcherBase::finished, this, &DirichletWidget::onAccuracyComputed);
+
+    // Запускаем в отдельном потоке
+    QFuture<DirichletSolverModel::FinerGridResult> future =
+        QtConcurrent::run([model = m_model]() {
+            return model->computeFinerGridComparison();
+        });
+
+    m_accuracyWatcher->setFuture(future);
+}
+
+void DirichletWidget::onAccuracyComputed()
+{
+    if (!m_model || !m_accuracyWatcher) return;
+
+    if (m_progressDialog)
+    {
+        m_progressDialog->close();
+        delete m_progressDialog;
+        m_progressDialog = nullptr;
+    }
+
+    auto result = m_accuracyWatcher->result();
+
+    // пересчитаем max
+    double eps2 = 0.0;
+    for (int i = 0; i <= m_nParam->value(); ++i)
+        for (int j = 0; j <= m_mParam->value(); ++j)
+            eps2 = std::max(eps2, result.diff[i][j]);
+
+    // покажем результат — например, в QTextEdit или QLabel
+    QString text = m_model->reportString(false);
+    setReportText(text);
 }
 
 QSurface3DSeries *DirichletWidget::createSeries(const QVector<QVector<double>> &data, const QString &name)
@@ -219,6 +280,8 @@ void DirichletWidget::onSolveButtonClicked()
     // updateChart();
     // emit solutionUpdated();
 
+    // оценить точность в фоне
+    computeAccuracyAsync();
     QString report = m_model->reportString(m_isTest);
     setReportText(report);
 }

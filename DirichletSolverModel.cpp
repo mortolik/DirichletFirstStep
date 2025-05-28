@@ -19,21 +19,48 @@ DirichletSolverModel::DirichletSolverModel(QObject *parent)
     m_uExact = QVector<QVector<double>>();
 }
 
-void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
+void DirichletSolverModel::setup(int n, int m, double omega, double eps, int maxIter)
 {
-    m_n = n;
-    m_m = m;
-    m_eps = eps;
+    // Сохраняем основные параметры:
+    m_n       = n;
+    m_m       = m;
+    m_omega   = omega;
+    m_eps     = eps;
     m_maxIter = maxIter;
 
-    m_h = (m_b - m_a) / m_n;
-    m_k = (m_d - m_c) / m_m;
+    // Считаем шаги по x/y:
+    m_h = (m_b - m_a) / double(m_n);
+    m_k = (m_d - m_c) / double(m_m);
 
-    m_u = QVector<QVector<double>>(m_n + 1, QVector<double>(m_m + 1, 0.0));
-    m_uExact = QVector<QVector<double>>(m_n + 1, QVector<double>(m_m + 1, 0.0));
+    // Предвычисляем константы:
+    m_invH2 = 1.0 / (m_h * m_h);
+    m_invK2 = 1.0 / (m_k * m_k);
+    m_denom = 2.0 * (m_invH2 + m_invK2);
 
-    initialize();
+    // Инициализируем контейнер m_u и m_uExact нужного размера и нулями:
+    m_u.resize(m_n + 1);
+    m_uExact.resize(m_n + 1);
+    for (int i = 0; i <= m_n; ++i) {
+        m_u[i].fill(0.0, m_m + 1);
+        m_uExact[i].fill(0.0, m_m + 1);
+    }
+
+    // Плоский буфер:
+    m_uPrevFlat.resize((m_n + 1) * (m_m + 1));
+
+    // Заполняем границы и точное решение:
+    initialize();  // ваша функция, которая делает applyBoundary() и заполняет m_uExact
+
+    // Копируем gраничные и начальные значения в плоский буфер:
+    for (int i = 0; i <= m_n; ++i)
+        for (int j = 0; j <= m_m; ++j)
+            m_uPrevFlat[flatIdx(i, j)] = m_u[i][j];
+
+    // Сбрасываем отчётные поля:
+    m_lastIter     = 0;
+    m_lastResidual = 0.0;
 }
+
 
 double DirichletSolverModel::f(double x, double y) const
 {
@@ -183,47 +210,51 @@ double DirichletSolverModel::computeInitialResidual() const
 
 void DirichletSolverModel::solveMainProblem()
 {
-    initializeInterior();
+    // 1) Вычисляем шаги и константы только один раз
+    m_h     = (m_b - m_a) / m_n;
+    m_k     = (m_d - m_c) / m_m;
+    m_invH2 = 1.0 / (m_h * m_h);
+    m_invK2 = 1.0 / (m_k * m_k);
+    m_denom = 2.0 * (m_invH2 + m_invK2);
+
+    int rows = m_n + 1, cols = m_m + 1;
+    // 2) Выделяем/заполняем плоский буфер
+    m_uPrevFlat.resize(rows * cols);
+    for(int i = 0; i < rows; ++i)
+        for(int j = 0; j < cols; ++j)
+            m_uPrevFlat[flatIdx(i,j)] = m_u[i][j];
 
     int iter = 0;
-    bool stop = false;
-    double maxResidual = 0.0;
-
-    while (!stop && iter < m_maxIter)
-    {
-        stop = true;
-        maxResidual = 0.0;
-
-        for (int i = 1; i < m_n; ++i)
-        {
-            for (int j = 1; j < m_m; ++j)
-            {
-                double x = m_a + i * m_h;
-                double y = m_c + j * m_k;
-
-                double rhs = (m_u[i + 1][j] + m_u[i - 1][j]) / (m_h * m_h)
-                             + (m_u[i][j + 1] + m_u[i][j - 1]) / (m_k * m_k)
+    double maxDiff;
+    do {
+        maxDiff = 0.0;
+#pragma omp parallel for reduction(max:maxDiff)
+        for(int i = 1; i < m_n; ++i) {
+            double x = m_a + i * m_h;
+            for(int j = 1; j < m_m; ++j) {
+                int idx = flatIdx(i,j);
+                double y   = m_c + j * m_k;
+                double rhs = (m_uPrevFlat[idx + cols] + m_uPrevFlat[idx - cols]) * m_invH2
+                             + (m_uPrevFlat[idx + 1    ] + m_uPrevFlat[idx - 1    ]) * m_invK2
                              - f(x, y);
 
-                double denom = 2.0 * (1.0 / (m_h * m_h) + 1.0 / (m_k * m_k));
-                double uNew = (1.0 - m_omega) * m_u[i][j] + m_omega * rhs / denom;
-
-                double diff = qAbs(uNew - m_u[i][j]);
-                if (diff > m_eps)
-                {
-                    stop = false;
-
-                }
-                maxResidual = qMax(maxResidual, diff);
-
-                m_u[i][j] = uNew;
+                double uNew = (1.0 - m_omega)*m_uPrevFlat[idx]
+                              + m_omega * (rhs / m_denom);
+                double diff = std::abs(uNew - m_uPrevFlat[idx]);
+                m_uPrevFlat[idx] = uNew;
+                if (diff > maxDiff) maxDiff = diff;
             }
         }
-
         ++iter;
-    }
-    m_lastIter = iter;
-    m_lastResidual = maxResidual;
+    } while (maxDiff > m_eps && iter < m_maxIter);
+
+    // 3) Копируем обратно в m_u
+    for(int i = 0; i < rows; ++i)
+        for(int j = 0; j < cols; ++j)
+            m_u[i][j] = m_uPrevFlat[flatIdx(i,j)];
+
+    m_lastIter     = iter;
+    m_lastResidual = maxDiff;
 }
 
 QVector<QVector<double>> DirichletSolverModel::error() const
@@ -292,62 +323,28 @@ void DirichletSolverModel::initializeInterior()
 
 QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const
 {
-    DirichletSolverModel fineModel;
-    fineModel.setup(finerN, finerM, m_eps, m_maxIter);
-    fineModel.solveMainProblem();
+    DirichletSolverModel finerModel;
+    finerModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    finerModel.solveMainProblem();
 
-    const QVector<QVector<double>> &fineU = fineModel.solution();
+    const auto &fineU = finerModel.solution();
+    int scaleI = finerN / m_n;
+    int scaleJ = finerM / m_m;
 
-    double fineH = (m_b - m_a) / finerN;
-    double fineK = (m_d - m_c) / finerM;
-
-    QVector<QVector<double>> coarseVsFine(m_n + 1, QVector<double>(m_m + 1, 0.0));
-    eps2Out = 0.0;
-
-#pragma omp parallel for
-    for (int i = 0; i <= m_n; ++i)
-    {
-        for (int j = 0; j <= m_m; ++j)
-        {
-            double x = m_a + i * m_h;
-            double y = m_c + j * m_k;
-
-            int fi = static_cast<int>((x - m_a) / fineH);
-            int fj = static_cast<int>((y - m_c) / fineK);
-
-            if (fi < 0 || fi >= finerN || fj < 0 || fj >= finerM)
-                continue;
-
-            double x0 = m_a + fi * fineH;
-            double y0 = m_c + fj * fineK;
-
-            double dx = (x - x0) / fineH;
-            double dy = (y - y0) / fineK;
-
-            double v00 = fineU[fi][fj];
-            double v10 = fineU[fi + 1][fj];
-            double v01 = fineU[fi][fj + 1];
-            double v11 = fineU[fi + 1][fj + 1];
-
-            double interpVal = (1 - dx) * (1 - dy) * v00
-                               + dx * (1 - dy) * v10
-                               + (1 - dx) * dy * v01
-                               + dx * dy * v11;
-
-            double diff = std::abs(m_u[i][j] - interpVal);
-            coarseVsFine[i][j] = diff;
-
-#pragma omp critical
-            {
-                if (diff > eps2Out)
-                    eps2Out = diff;
-            }
+    double maxError = 0.0;
+    QVector<QVector<double>> diff(m_n + 1, QVector<double>(m_m + 1, 0.0));
+    for (int i = 0; i <= m_n; ++i) {
+        for (int j = 0; j <= m_m; ++j) {
+            double delta = std::abs(m_u[i][j] - fineU[i * scaleI][j * scaleJ]);
+            diff[i][j] = delta;
+            if (delta > maxError)
+                maxError = delta;
         }
     }
 
-    return coarseVsFine;
+    eps2Out = maxError;
+    return diff;
 }
-
 
 DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool isTestTask) const
 {
@@ -365,7 +362,11 @@ DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool i
     if (!isTestTask)
     {
         double eps2 = 0.0;
-        compareWithFinerGrid(m_n * 2, m_m * 2, eps2);
+        auto result = computeFinerGridComparison();
+        for (int i = 0; i <= m_n; ++i)
+            for (int j = 0; j <= m_m; ++j)
+                eps2 = std::max(eps2, result.diff[i][j]);
+
         data.accuracy = eps2;
     }
 
@@ -383,7 +384,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
-    lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
+
     if (data.isTest && data.maxError >= 0)
     {
         lines << "Начальное приближение: нулевое";
@@ -403,15 +404,10 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     return lines.join("\n");
 }
 
-double DirichletSolverModel::lastResidual() const
-{
-    return m_lastResidual;
-}
-
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
 {
     DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
+    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> fineU = fineModel.solution();
@@ -475,25 +471,42 @@ double DirichletSolverModel::computeOptimalOmega()
 
 DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComparison() const
 {
-    DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
-    fineModel.solveMainProblem();
+    int finerN = m_n * 2;
+    int finerM = m_m * 2;
 
-    QVector<QVector<double>> v2Full = fineModel.solution();
+    // 1. Создаём и решаем на утончённой сетке
+    DirichletSolverModel finer;
+    finer.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    finer.solveMainProblem();
 
-    QVector<QVector<double>> v(m_n + 1, QVector<double>(m_m + 1));
-    QVector<QVector<double>> diff(m_n + 1, QVector<double>(m_m + 1));
+    const QVector<QVector<double>> &fineU = finer.solution();
 
-    for (int i = 0; i <= m_n; ++i)
-    {
-        for (int j = 0; j <= m_m; ++j)
-        {
-            v[i][j] = m_u[i][j];
-            double v2value = v2Full[i * 2][j * 2];
-            diff[i][j] = qAbs(v[i][j] - v2value);
+    // 2. Сравниваем только те точки, что совпадают
+    int scaleI = finerN / m_n;
+    int scaleJ = finerM / m_m;
+
+    FinerGridResult result;
+    result.v = m_u;
+    result.v2.resize(m_n + 1);
+    result.diff.resize(m_n + 1);
+    double maxErr = 0.0;
+
+#pragma omp parallel for reduction(max:maxErr)
+    for (int i = 0; i <= m_n; ++i) {
+        result.v2[i].resize(m_m + 1);
+        result.diff[i].resize(m_m + 1);
+        for (int j = 0; j <= m_m; ++j) {
+            double fineVal = fineU[i * scaleI][j * scaleJ];
+            double delta   = std::abs(m_u[i][j] - fineVal);
+            result.v2[i][j]   = fineVal;
+            result.diff[i][j] = delta;
+
+            if (delta > maxErr)
+                maxErr = delta;
         }
     }
 
-    return { v, v2Full, diff };
+    result.v = m_u;
+    return result;
 }
 
