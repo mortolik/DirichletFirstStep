@@ -237,11 +237,18 @@ void DirichletWidget::updateChart()
         return;
     }
 
-    if (m_isTest)
-    {
-        m_surface->addSeries(createSeries(m_model->exactSolution(), "u*(x, y)"));
-        m_surface->addSeries(createSeries(m_model->solution(), "v(x, y)"));
-    }
+        if (m_isTest)
+        {
+            auto *exact = createSeries(m_model->exactSolution(), "u*(x, y)");
+            exact->setBaseColor(Qt::blue);
+
+            auto *numerical = createSeries(m_model->solution(), "v(x, y)");
+            numerical->setBaseColor(Qt::green);
+
+            m_surface->addSeries(exact);
+            m_surface->addSeries(numerical);
+        }
+
     else
     {
         m_surface->addSeries(createSeries(m_model->solution(), "Численное решение"));
