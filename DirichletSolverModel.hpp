@@ -62,7 +62,7 @@ private:
     int m_m;
     int m_maxIter;
     int m_lastIter;
-    int m_lastResidual;
+    double m_lastResidual;
 
     double m_a;
     double m_b;
