@@ -10,7 +10,7 @@ class DirichletSolverModel : public QObject
 
 public:
     explicit DirichletSolverModel(QObject *parent = nullptr);
-    void setup(int n, int m, double omega, double eps, int maxIter);
+    void setup(int n, int m, double eps, int maxIter);
     void solveTestProblem();
     void solveMainProblem();
 
@@ -42,6 +42,8 @@ public:
     double d() const { return m_d; }
     double h() const { return m_h; }
     double k() const { return m_k; }
+
+    void setOmega(double omega) { m_omega = omega; }
 
     double computeOptimalOmega();
 
