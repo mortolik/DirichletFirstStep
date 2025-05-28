@@ -19,12 +19,11 @@ DirichletSolverModel::DirichletSolverModel(QObject *parent)
     m_uExact = QVector<QVector<double>>();
 }
 
-void DirichletSolverModel::setup(int n, int m, double omega, double eps, int maxIter)
+void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
 {
     // Сохраняем основные параметры:
     m_n       = n;
     m_m       = m;
-    m_omega   = omega;
     m_eps     = eps;
     m_maxIter = maxIter;
 
@@ -324,7 +323,7 @@ void DirichletSolverModel::initializeInterior()
 QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const
 {
     DirichletSolverModel finerModel;
-    finerModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    finerModel.setup(finerN, finerM, m_eps, m_maxIter);
     finerModel.solveMainProblem();
 
     const auto &fineU = finerModel.solution();
@@ -413,7 +412,7 @@ double DirichletSolverModel::lastResidual() const
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
 {
     DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
+    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> fineU = fineModel.solution();
@@ -482,7 +481,7 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
 
     // 1. Создаём и решаем на утончённой сетке
     DirichletSolverModel finer;
-    finer.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    finer.setup(finerN, finerM, m_eps, m_maxIter);
     finer.solveMainProblem();
 
     const QVector<QVector<double>> &fineU = finer.solution();

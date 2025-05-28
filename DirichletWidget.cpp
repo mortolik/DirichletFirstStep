@@ -134,7 +134,7 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     m_mParam->setValue(100);
 
     m_stepsParam->setRange(0, 1000000);
-    m_stepsParam->setValue(500);
+    m_stepsParam->setValue(1500);
 
     m_epsParam->setDecimals(8);
     m_epsParam->setValue(0.00000001);
