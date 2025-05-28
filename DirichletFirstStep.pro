@@ -1,5 +1,6 @@
 QT       += core gui
 QT += datavisualization
+QT += concurrent
 
 RC_ICONS = favicon.ico
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

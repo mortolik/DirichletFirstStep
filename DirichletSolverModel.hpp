@@ -74,6 +74,14 @@ private:
     QVector<QVector<double>> m_uExact;
 
 
+    double m_invH2;    // добавить
+    double m_invK2;    // добавить
+    double m_denom;
+    std::vector<double> m_uPrevFlat;  // добавить
+
+    // Удобный доступ к плоскому индексу
+    inline int flatIdx(int i, int j) const { return i*(m_m+1) + j; }
+
     void initialize();
 
     double f(double x, double y) const;
