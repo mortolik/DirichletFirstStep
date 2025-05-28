@@ -384,6 +384,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
+    lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
 
     if (data.isTest && data.maxError >= 0)
     {
@@ -402,6 +403,11 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     }
 
     return lines.join("\n");
+}
+
+double DirichletSolverModel::lastResidual() const
+{
+    return m_lastResidual;
 }
 
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
