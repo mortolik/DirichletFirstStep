@@ -19,11 +19,10 @@ DirichletSolverModel::DirichletSolverModel(QObject *parent)
     m_uExact = QVector<QVector<double>>();
 }
 
-void DirichletSolverModel::setup(int n, int m, double omega, double eps, int maxIter)
+void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
 {
     m_n = n;
     m_m = m;
-    m_omega = omega;
     m_eps = eps;
     m_maxIter = maxIter;
 
@@ -294,7 +293,7 @@ void DirichletSolverModel::initializeInterior()
 QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, int finerM, double &eps2Out) const
 {
     DirichletSolverModel fineModel;
-    fineModel.setup(finerN, finerM, m_omega, m_eps, m_maxIter);
+    fineModel.setup(finerN, finerM, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> fineU = fineModel.solution();
@@ -372,7 +371,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
-
+    lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
     if (data.isTest && data.maxError >= 0)
     {
         lines << "Начальное приближение: нулевое";
@@ -392,10 +391,15 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     return lines.join("\n");
 }
 
+double DirichletSolverModel::lastResidual() const
+{
+    return m_lastResidual;
+}
+
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
 {
     DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
+    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> fineU = fineModel.solution();
@@ -460,7 +464,7 @@ double DirichletSolverModel::computeOptimalOmega()
 DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComparison() const
 {
     DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_omega, m_eps, m_maxIter);
+    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> v2Full = fineModel.solution();

@@ -10,7 +10,7 @@ class DirichletSolverModel : public QObject
 
 public:
     explicit DirichletSolverModel(QObject *parent = nullptr);
-    void setup(int n, int m, double omega, double eps, int maxIter);
+    void setup(int n, int m, double eps, int maxIter);
     void solveTestProblem();
     void solveMainProblem();
 
@@ -54,6 +54,9 @@ public:
 
     DirichletSolverModel::FinerGridResult computeFinerGridComparison() const;
 
+    double lastResidual() const;
+
+    void setOmega(double omega) { m_omega = omega; }
 private:
     int m_n;
     int m_m;
@@ -73,6 +76,14 @@ private:
     QVector<QVector<double>> m_u;
     QVector<QVector<double>> m_uExact;
 
+
+    double m_invH2;    // добавить
+    double m_invK2;    // добавить
+    double m_denom;
+    std::vector<double> m_uPrevFlat;  // добавить
+
+    // Удобный доступ к плоскому индексу
+    inline int flatIdx(int i, int j) const { return i*(m_m+1) + j; }
 
     void initialize();
 

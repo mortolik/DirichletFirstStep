@@ -199,13 +199,17 @@ void DirichletWidget::onSolveButtonClicked()
     double eps = m_epsParam->value();
     int maxIter = m_stepsParam->value();
 
-    double omega = m_omegaParam->value();
-    m_model->setup(n, m, omega, eps, maxIter);
+    m_model->setup(n, m, eps, maxIter);
+    double omega = 0;
     if (m_optimalCheckBox->isChecked())
     {
-        double omegaOpt = m_model->computeOptimalOmega();
-        m_model->setup(n, m, omegaOpt, eps, maxIter);
+        omega = m_model->computeOptimalOmega();
     }
+    else
+    {
+        omega = m_omegaParam->value();
+    }
+    m_model->setOmega(omega);
 
     if (m_isTest)
         m_model->solveTestProblem();
