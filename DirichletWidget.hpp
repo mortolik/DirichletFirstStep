@@ -1,7 +1,5 @@
 #pragma once
 #include "DirichletSolverModel.hpp"
-#include "qfuturewatcher.h"
-#include "qprogressdialog.h"
 #include "qtextedit.h"
 #include <QWidget>
 #include <QtDataVisualization/Q3DSurface>
@@ -33,8 +31,6 @@ public:
 
 private slots:
     void onSolveButtonClicked();
-    void computeAccuracyAsync();
-    void onAccuracyComputed();
 
     void setReportText(const QString &text);
 signals:
@@ -62,9 +58,6 @@ private:
 
     QTextEdit* m_reportEdit;
 
-    QProgressDialog *m_progressDialog = nullptr;
-    QFutureWatcher<DirichletSolverModel::FinerGridResult> *m_accuracyWatcher = nullptr;
-
     void setupChart();
     QSurface3DSeries *createSeries(const QVector<QVector<double>> &data, const QString &name);
 
@@ -73,5 +66,4 @@ private:
     void updateChart();
     QGroupBox *createReportBox();
     QGroupBox* createChartBox();
-
 };
