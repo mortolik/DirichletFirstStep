@@ -1,4 +1,5 @@
 #include "DirichletSolverModel.hpp"
+#include "qdebug.h"
 
 #include <QtMath>
 #include <QTextStream>
@@ -58,8 +59,8 @@ void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
     // Сбрасываем отчётные поля:
     m_lastIter     = 0;
     m_lastResidual = 0.0;
+    m_resultCached = false;
 }
-
 
 double DirichletSolverModel::f(double x, double y) const
 {
@@ -204,11 +205,13 @@ double DirichletSolverModel::computeInitialResidual() const
             maxR = qMax(maxR, qAbs(R));
         }
     }
+    qDebug() << maxR;
     return maxR;
 }
 
 void DirichletSolverModel::solveMainProblem()
 {
+    initializeInterior();
     // 1) Вычисляем шаги и константы только один раз
     m_h     = (m_b - m_a) / m_n;
     m_k     = (m_d - m_c) / m_m;
@@ -253,6 +256,8 @@ void DirichletSolverModel::solveMainProblem()
             m_u[i][j] = m_uPrevFlat[flatIdx(i,j)];
 
     m_lastIter     = iter;
+    qDebug() << m_lastIter;
+    qDebug() <<"Omega = " << m_omega;
     m_lastResidual = maxDiff;
 }
 
@@ -361,12 +366,13 @@ DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool i
     if (!isTestTask)
     {
         double eps2 = 0.0;
-        auto result = computeFinerGridComparison();
+        m_result = computeFinerGridComparison();
         for (int i = 0; i <= m_n; ++i)
             for (int j = 0; j <= m_m; ++j)
-                eps2 = std::max(eps2, result.diff[i][j]);
+                eps2 = std::max(eps2, m_result.diff[i][j]);
 
         data.accuracy = eps2;
+        qDebug() << eps2;
     }
 
     return data;
@@ -466,22 +472,77 @@ QPair<double, double> DirichletSolverModel::maxErrorPoint() const
     return qMakePair(x, y);
 }
 
-double DirichletSolverModel::computeOptimalOmega()
+double DirichletSolverModel::computeOptimalOmega() const
 {
     double rho = std::cos(M_PI / m_n) + std::cos(M_PI / m_m);
     double value = std::sqrt(1 - std::pow(rho / 2.0, 2));
-    m_omega = 2.0 / (1.0 + value);
-    return m_omega;
+    return 2.0 / (1.0 + value);
+}
+
+void DirichletSolverModel::applyInterpolatedInitialGuess(
+    const QVector<QVector<double>>& coarseU, int coarseN, int coarseM)
+{
+    // 1) билинейная интерполяция для внутренних узлов
+    for (int i = 1; i < m_n; ++i) {
+        double x = m_a + i * m_h;
+        double u = (x - m_a) / (m_b - m_a) * coarseN;
+        int i0 = std::clamp(int(floor(u)), 0, coarseN-1);
+        double dx = u - i0;
+
+        for (int j = 1; j < m_m; ++j) {
+            double y = m_c + j * m_k;
+            double v = (y - m_c) / (m_d - m_c) * coarseM;
+            int j0 = std::clamp(int(floor(v)), 0, coarseM-1);
+            double dy = v - j0;
+
+            double f00 = coarseU[i0  ][j0  ];
+            double f10 = coarseU[i0+1][j0  ];
+            double f01 = coarseU[i0  ][j0+1];
+            double f11 = coarseU[i0+1][j0+1];
+
+            double w0 = (1 - dx)*(1 - dy);
+            double w1 = dx*(1 - dy);
+            double w2 = (1 - dx)*dy;
+            double w3 = dx*dy;
+
+            m_u[i][j] = f00*w0 + f10*w1 + f01*w2 + f11*w3;
+        }
+    }
+
+    // 2) Снова жёстко задаём граничные условия
+    for (int i = 0; i <= m_n; ++i) {
+        double x = m_a + i * m_h;
+        m_u[i][0]   = mu3(x);
+        m_u[i][m_m] = mu4(x);
+    }
+    for (int j = 0; j <= m_m; ++j) {
+        double y = m_c + j * m_k;
+        m_u[0][j]   = mu1(y);
+        m_u[m_n][j] = mu2(y);
+    }
+
+    // 3) Плоский буфер
+    for (int i = 0; i <= m_n; ++i)
+        for (int j = 0; j <= m_m; ++j)
+            m_uPrevFlat[flatIdx(i,j)] = m_u[i][j];
 }
 
 DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComparison() const
 {
+    if (m_resultCached)
+    {
+        return m_result;
+    }
+
     int finerN = m_n * 2;
     int finerM = m_m * 2;
 
     // 1. Создаём и решаем на утончённой сетке
     DirichletSolverModel finer;
     finer.setup(finerN, finerM, m_eps, m_maxIter);
+    double omega = computeOptimalOmega();
+    finer.setOmega(omega);
+    finer.applyInterpolatedInitialGuess(m_u, m_n, m_m);
     finer.solveMainProblem();
 
     const QVector<QVector<double>> &fineU = finer.solution();
@@ -496,7 +557,7 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     result.diff.resize(m_n + 1);
     double maxErr = 0.0;
 
-#pragma omp parallel for reduction(max:maxErr)
+#pragma omp parallel for schedule(static) reduction(max:maxErr)
     for (int i = 0; i <= m_n; ++i) {
         result.v2[i].resize(m_m + 1);
         result.diff[i].resize(m_m + 1);
@@ -512,6 +573,9 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     }
 
     result.v = m_u;
-    return result;
+
+    m_result = result;
+    m_resultCached = true;
+    return m_result;
 }
 
