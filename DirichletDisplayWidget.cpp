@@ -1,5 +1,6 @@
 #include <QGroupBox>
 #include <QHeaderView>
+#include <QElapsedTimer>
 #include "DirichletSolverModel.hpp"
 #include "DirichletDisplayWidget.hpp"
 
@@ -78,7 +79,13 @@ void DirichletDisplayWidget::updateTable()
 
 void DirichletDisplayWidget::onSolutionUpdated()
 {
+    QElapsedTimer timer;
+    timer.start();
+
     updateTable();
+
+    qDebug() << "Таблица построена за" << timer.elapsed() << "ms или"
+             << timer.elapsed()/ 60000.0 << "min";
 }
 
 QGroupBox *DirichletDisplayWidget::createTableBox()

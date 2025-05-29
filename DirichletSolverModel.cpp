@@ -1,8 +1,10 @@
 #include "DirichletSolverModel.hpp"
 #include "qdebug.h"
 
+
 #include <QtMath>
 #include <QTextStream>
+#include <QElapsedTimer>
 
 DirichletSolverModel::DirichletSolverModel(QObject *parent)
     : QObject(parent),
@@ -211,6 +213,8 @@ double DirichletSolverModel::computeInitialResidual() const
 
 void DirichletSolverModel::solveMainProblem()
 {
+    QElapsedTimer timer;
+    timer.start();
     if (!m_skipInitialization)
         initializeInterior();
     // 1) Вычисляем шаги и константы только один раз
@@ -259,6 +263,8 @@ void DirichletSolverModel::solveMainProblem()
     m_lastIter     = iter;
     qDebug() << m_lastIter;
     qDebug() <<"Omega = " << m_omega;
+    qDebug() <<"Вычислено за" << timer.elapsed() << "ms или"
+             << timer.elapsed()/ 60000.0 << "min";
     m_lastResidual = maxDiff;
 }
 
