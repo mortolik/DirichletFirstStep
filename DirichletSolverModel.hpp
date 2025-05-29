@@ -52,6 +52,8 @@ public:
         QVector<QVector<double>> v;
         QVector<QVector<double>> v2;
         QVector<QVector<double>> diff;
+        int iterations = 0;
+        QPair<double,double> maxPt{0,0};
     };
 
     DirichletSolverModel::FinerGridResult computeFinerGridComparison() const;
@@ -60,6 +62,7 @@ public:
     int lastIter() const;
     const FinerGridResult& lastFinerGridResult() const { return m_result; }
     bool hasFinerCached() const { return m_resultCached; }
+
 
 private:
     int m_n;
