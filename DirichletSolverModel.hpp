@@ -58,6 +58,9 @@ public:
 
     double lastResidual() const;
     int lastIter() const;
+    const FinerGridResult& lastFinerGridResult() const { return m_result; }
+    bool hasFinerCached() const { return m_resultCached; }
+
 private:
     int m_n;
     int m_m;

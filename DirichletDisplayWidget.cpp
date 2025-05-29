@@ -15,7 +15,6 @@ DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool
     createTableBox();
 
     connect(m_chart, &DirichletWidget::solutionUpdated, this, &DirichletDisplayWidget::onSolutionUpdated);
-    //updateTable();
 }
 
 QTabWidget *DirichletDisplayWidget::tableWidget()
@@ -73,7 +72,9 @@ void DirichletDisplayWidget::updateTable()
     }
     else
     {
-        auto result = m_model->computeFinerGridComparison();
+        if (!m_model->hasFinerCached())
+            m_model->computeFinerGridComparison();
+        const auto &result = m_model->lastFinerGridResult();
         fillTable(m_tableV, result.v);
         fillTable(m_tableV2, result.v2);
         fillTable(m_tableVDiff, result.diff);

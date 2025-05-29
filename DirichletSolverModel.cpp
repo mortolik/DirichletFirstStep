@@ -368,6 +368,7 @@ DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool i
     {
         double eps2 = 0.0;
         m_result = computeFinerGridComparison();
+        m_resultCached = true;
         for (int i = 0; i <= m_n; ++i)
             for (int j = 0; j <= m_m; ++j)
                 eps2 = std::max(eps2, m_result.diff[i][j]);
@@ -426,6 +427,8 @@ QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
 {
     DirichletSolverModel fineModel;
     fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
+    double omega = computeOptimalOmega();
+    fineModel.setOmega(omega);
     fineModel.solveMainProblem();
 
     QVector<QVector<double>> fineU = fineModel.solution();
