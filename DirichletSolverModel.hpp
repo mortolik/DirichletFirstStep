@@ -45,7 +45,7 @@ public:
 
     void setOmega(double omega) { m_omega = omega; }
 
-    double computeOptimalOmega();
+    double computeOptimalOmega() const;
 
     struct FinerGridResult
     {
@@ -72,6 +72,9 @@ private:
     double m_k;
     double m_omega;
     double m_eps;
+
+    mutable FinerGridResult m_result;
+    mutable bool m_resultCached = false;
 
     QVector<QVector<double>> m_u;
     QVector<QVector<double>> m_uExact;
@@ -102,4 +105,5 @@ private:
 
     double computeInitialResidual() const;
     void initializeInterior();
+    void applyInterpolatedInitialGuess(const QVector<QVector<double> > &coarseU, int coarseN, int coarseM);
 };
