@@ -57,12 +57,15 @@ public:
     DirichletSolverModel::FinerGridResult computeFinerGridComparison() const;
 
     double lastResidual() const;
+    int lastIter() const;
 private:
     int m_n;
     int m_m;
     int m_maxIter;
     int m_lastIter;
+    mutable int m_last2Iter;
     double m_lastResidual;
+    mutable bool m_skipInitialization = false;
 
     double m_a;
     double m_b;

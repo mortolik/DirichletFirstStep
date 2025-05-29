@@ -211,7 +211,8 @@ double DirichletSolverModel::computeInitialResidual() const
 
 void DirichletSolverModel::solveMainProblem()
 {
-    initializeInterior();
+    if (!m_skipInitialization)
+        initializeInterior();
     // 1) Вычисляем шаги и константы только один раз
     m_h     = (m_b - m_a) / m_n;
     m_k     = (m_d - m_c) / m_m;
@@ -401,6 +402,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
 
     if (!data.isTest && data.accuracy >= 0)
     {
+        lines << QString("Количество итераций на удвоенной сетке: %1").arg(m_last2Iter);
         lines << "Начальное приближение: среднее";
         lines << QString("Оценка точности ε₂ = max |v(x, y) − v₂(x, y)|  = %1").arg(data.accuracy, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPointCompare();
@@ -413,6 +415,11 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
 double DirichletSolverModel::lastResidual() const
 {
     return m_lastResidual;
+}
+
+int DirichletSolverModel::lastIter() const
+{
+    return m_lastIter;
 }
 
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
@@ -543,7 +550,9 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     double omega = computeOptimalOmega();
     finer.setOmega(omega);
     finer.applyInterpolatedInitialGuess(m_u, m_n, m_m);
+    finer.m_skipInitialization = true;
     finer.solveMainProblem();
+    m_last2Iter = finer.lastIter();
 
     const QVector<QVector<double>> &fineU = finer.solution();
 
