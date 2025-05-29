@@ -285,6 +285,7 @@ QGroupBox* DirichletWidget::createReportBox()
 
     layout->addWidget(m_reportEdit);
 
+    box->setFixedHeight(220);
     return box;
 }
 
