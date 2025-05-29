@@ -127,10 +127,10 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     m_stepsParam = new QSpinBox();
     m_omegaParam = new QDoubleSpinBox();
 
-    m_nParam->setRange(1, 1000);
+    m_nParam->setRange(1, 10000);
     m_nParam->setValue(100);
 
-    m_mParam->setRange(1, 1000);
+    m_mParam->setRange(1, 10000);
     m_mParam->setValue(100);
 
     m_stepsParam->setRange(0, 1000000);
