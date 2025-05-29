@@ -12,6 +12,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QFormLayout>
+#include <QElapsedTimer>
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
 
@@ -194,6 +195,8 @@ QGroupBox *DirichletWidget::createLeftLayout()
 
 void DirichletWidget::onSolveButtonClicked()
 {
+    QElapsedTimer timer;
+    timer.start();
     int n = m_nParam->value();
     int m = m_mParam->value();
     double eps = m_epsParam->value();
@@ -221,6 +224,9 @@ void DirichletWidget::onSolveButtonClicked()
 
     QString report = m_model->reportString(m_isTest);
     setReportText(report);
+    qDebug() << "Графики построены за "
+             << timer.elapsed() << "ms или"
+             << timer.elapsed()/ 60000.0 << "min";
 }
 
 void DirichletWidget::updateChart()
