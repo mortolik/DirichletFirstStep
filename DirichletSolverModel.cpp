@@ -425,34 +425,8 @@ int DirichletSolverModel::lastIter() const
 
 QPair<double, double> DirichletSolverModel::maxErrorPointCompare() const
 {
-    DirichletSolverModel fineModel;
-    fineModel.setup(m_n * 2, m_m * 2, m_eps, m_maxIter);
-    double omega = computeOptimalOmega();
-    fineModel.setOmega(omega);
-    fineModel.solveMainProblem();
-
-    QVector<QVector<double>> fineU = fineModel.solution();
-
-    double maxErr = 0.0;
-    int maxI = 0, maxJ = 0;
-
-    for (int i = 0; i <= m_n; ++i)
-    {
-        for (int j = 0; j <= m_m; ++j)
-        {
-            double diff = qAbs(m_u[i][j] - fineU[i * 2][j * 2]);
-            if (diff > maxErr)
-            {
-                maxErr = diff;
-                maxI = i;
-                maxJ = j;
-            }
-        }
-    }
-
-    double x = m_a + maxI * m_h;
-    double y = m_c + maxJ * m_k;
-    return qMakePair(x, y);
+    const auto &R = computeFinerGridComparison();
+    return R.maxPt;
 }
 
 QPair<double, double> DirichletSolverModel::maxErrorPoint() const
@@ -480,6 +454,7 @@ QPair<double, double> DirichletSolverModel::maxErrorPoint() const
     double x = m_a + maxI * m_h;
     double y = m_c + maxJ * m_k;
     return qMakePair(x, y);
+
 }
 
 double DirichletSolverModel::computeOptimalOmega() const
@@ -557,37 +532,43 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     finer.solveMainProblem();
     m_last2Iter = finer.lastIter();
 
-    const QVector<QVector<double>> &fineU = finer.solution();
-
-    // 2. Сравниваем только те точки, что совпадают
+    auto const &fineU = finer.solution();
     int scaleI = finerN / m_n;
     int scaleJ = finerM / m_m;
 
-    FinerGridResult result;
-    result.v = m_u;
-    result.v2.resize(m_n + 1);
-    result.diff.resize(m_n + 1);
-    double maxErr = 0.0;
+    // 2) Готовим результат
+    FinerGridResult R;
+    R.iterations = finer.lastIter();
+    R.v    = m_u;
+    R.v2   .resize(m_n + 1);
+    R.diff .resize(m_n + 1);
 
-#pragma omp parallel for schedule(static) reduction(max:maxErr)
+    double maxErr = 0.0;
+    int maxI = 0, maxJ = 0;
+
+// 3) Считаем разности и запоминаем точку максимума
+#pragma omp parallel for reduction(max:maxErr)
     for (int i = 0; i <= m_n; ++i) {
-        result.v2[i].resize(m_m + 1);
-        result.diff[i].resize(m_m + 1);
+        R.v2[i].resize(m_m + 1);
+        R.diff[i].resize(m_m + 1);
         for (int j = 0; j <= m_m; ++j) {
             double fineVal = fineU[i * scaleI][j * scaleJ];
             double delta   = std::abs(m_u[i][j] - fineVal);
-            result.v2[i][j]   = fineVal;
-            result.diff[i][j] = delta;
-
-            if (delta > maxErr)
+            R.v2  [i][j] = fineVal;
+            R.diff[i][j] = delta;
+            if (delta > maxErr) {
                 maxErr = delta;
+                maxI = i;
+                maxJ = j;
+            }
         }
     }
 
-    result.v = m_u;
+    // 4) Сохраняем точку максимального отклонения
+    R.maxPt.first  = m_a + maxI * m_h;
+    R.maxPt.second = m_c + maxJ * m_k;
 
-    m_result = result;
+    m_result       = R;
     m_resultCached = true;
     return m_result;
 }
-
