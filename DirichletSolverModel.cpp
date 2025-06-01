@@ -122,7 +122,7 @@ void DirichletSolverModel::initialize()
 
 void DirichletSolverModel::solveTestProblem()
 {
-    double maxResidual = 0.0;
+    // Границы
     for (int i = 0; i <= m_n; ++i)
     {
         double x = m_a + i * m_h;
@@ -135,57 +135,69 @@ void DirichletSolverModel::solveTestProblem()
         m_u[0][j]      = uStar(m_a, y);
         m_u[m_n][j]    = uStar(m_b, y);
     }
+
+    // Внутренность — начальное приближение нулевое
     for (int i = 1; i < m_n; ++i)
         for (int j = 1; j < m_m; ++j)
             m_u[i][j] = 0.0;
 
+// Заполнение точного решения
+#pragma omp parallel for
     for (int i = 0; i <= m_n; ++i)
+    {
         for (int j = 0; j <= m_m; ++j)
         {
-            double x = m_a + i*m_h;
-            double y = m_c + j*m_k;
+            double x = m_a + i * m_h;
+            double y = m_c + j * m_k;
             m_uExact[i][j] = uStar(x, y);
         }
+    }
 
-    double h2 = m_h*m_h, k2 = m_k*m_k;
-    double denom = 2.0*(1.0/h2 + 1.0/k2);
+    // Вычисление
+    double h2 = m_h * m_h, k2 = m_k * m_k;
+    double denom = 2.0 * (1.0 / h2 + 1.0 / k2);
 
     int iter = 0;
     bool stop = false;
+    double maxResidual = 0.0;
+
     while (!stop && iter < m_maxIter)
     {
         maxResidual = 0.0;
         stop = true;
+
+#pragma omp parallel for reduction(max:maxResidual)
         for (int i = 1; i < m_n; ++i)
         {
             for (int j = 1; j < m_m; ++j)
             {
-                double x = m_a + i*m_h;
-                double y = m_c + j*m_k;
+                double x = m_a + i * m_h;
+                double y = m_c + j * m_k;
 
                 double fstar = -fTest(x, y);
 
-                double rhs = (m_u[i+1][j] + m_u[i-1][j])/h2
-                             + (m_u[i][j+1] + m_u[i][j-1])/k2
+                double rhs = (m_u[i+1][j] + m_u[i-1][j]) / h2
+                             + (m_u[i][j+1] + m_u[i][j-1]) / k2
                              - fstar;
 
-                double uNew = (1.0 - m_omega)*m_u[i][j]
-                              + m_omega*(rhs/denom);
+                double uNew = (1.0 - m_omega) * m_u[i][j] + m_omega * (rhs / denom);
+                double diff = std::abs(uNew - m_u[i][j]);
 
-                double diff = qAbs(uNew - m_u[i][j]);
                 if (diff > m_eps)
                 {
                     stop = false;
-
                 }
-                maxResidual = qMax(maxResidual, diff);
 
                 m_u[i][j] = uNew;
+                if (diff > maxResidual)
+                    maxResidual = diff;
             }
         }
+
         ++iter;
     }
-    m_lastIter = iter;
+
+    m_lastIter     = iter;
     m_lastResidual = maxResidual;
 }
 
