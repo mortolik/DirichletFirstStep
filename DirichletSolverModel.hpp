@@ -54,6 +54,9 @@ public:
         QVector<QVector<double>> diff;
         int iterations = 0;
         QPair<double,double> maxPt{0,0};
+        double finalResidual2 = 0.0;
+        double lastResidual2 = 0.0;
+        double omega2 = 0.0;
     };
 
     DirichletSolverModel::FinerGridResult computeFinerGridComparison() const;
