@@ -426,6 +426,9 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     if (!data.isTest && data.accuracy >= 0)
     {
         lines << QString("Количество итераций на удвоенной сетке: %1").arg(m_last2Iter);
+        lines << QString("Параметр на удвоенной сетке: ω2 = %1").arg(m_result.omega2);
+        lines << QString("Невязка для v₂(x, y): %1").arg(m_result.finalResidual2, 0, 'e', 5);
+        lines << QString("Достигнутая точность для v₂(x, y: %1").arg(m_result.lastResidual2, 0, 'e', 5);
         lines << "Начальное приближение: среднее";
         lines << QString("Оценка точности ε₂ = max |v(x, y) − v₂(x, y)|  = %1").arg(data.accuracy, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPointCompare();
@@ -476,7 +479,6 @@ QPair<double, double> DirichletSolverModel::maxErrorPoint() const
     double x = m_a + maxI * m_h;
     double y = m_c + maxJ * m_k;
     return qMakePair(x, y);
-
 }
 
 double DirichletSolverModel::computeOptimalOmega() const
@@ -547,7 +549,7 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     // 1. Создаём и решаем на утончённой сетке
     DirichletSolverModel finer;
     finer.setup(finerN, finerM, m_eps, m_maxIter);
-    double omega = computeOptimalOmega();
+    double omega = finer.computeOptimalOmega();
     finer.setOmega(omega);
     finer.applyInterpolatedInitialGuess(m_u, m_n, m_m);
     finer.m_skipInitialization = true;
@@ -564,6 +566,7 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     R.v    = m_u;
     R.v2   .resize(m_n + 1);
     R.diff .resize(m_n + 1);
+    R.omega2 = omega;
 
     double maxErr = 0.0;
     int maxI = 0, maxJ = 0;
@@ -586,9 +589,10 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
         }
     }
 
-    // 4) Сохраняем точку максимального отклонения
     R.maxPt.first  = m_a + maxI * m_h;
     R.maxPt.second = m_c + maxJ * m_k;
+    R.lastResidual2 = finer.lastResidual();
+    R.finalResidual2 = finer.computeFinalResidual();
 
     m_result       = R;
     m_resultCached = true;
