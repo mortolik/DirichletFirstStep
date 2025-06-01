@@ -217,7 +217,7 @@ double DirichletSolverModel::computeInitialResidual() const
     return maxR;
 }
 
-double DirichletSolverModel::computeFinalResidual() const
+double DirichletSolverModel::computeFinalResidual(bool isTest) const
 {
     double maxR = 0.0;
     for (int i = 1; i < m_n; ++i)
@@ -231,7 +231,9 @@ double DirichletSolverModel::computeFinalResidual() const
                 (m_u[i+1][j] - 2*m_u[i][j] + m_u[i-1][j]) / (m_h * m_h) +
                 (m_u[i][j+1] - 2*m_u[i][j] + m_u[i][j-1]) / (m_k * m_k);
 
-            double R = laplace - f(x, y);
+            double rhs = isTest ? -fTest(x, y) : f(x, y);
+            double R = laplace - rhs;
+
             maxR = qMax(maxR, qAbs(R));
         }
     }
@@ -424,11 +426,11 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
     lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
-    lines << QString("СЛАУ решена с невязкой : %1").arg(computeFinalResidual(), 0, 'e', 3);
     lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
 
     if (data.isTest && data.maxError >= 0)
     {
+        lines << QString("СЛАУ решена с невязкой : %1").arg(computeFinalResidual(true), 0, 'e', 3);
         lines << "Начальное приближение: нулевое";
         lines << QString("Максимальная погрешность ε₁ = %1").arg(data.maxError, 0, 'e', 3);
         auto [xmax, ymax] = maxErrorPoint();
@@ -437,6 +439,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
 
     if (!data.isTest && data.accuracy >= 0)
     {
+        lines << QString("СЛАУ решена с невязкой : %1").arg(computeFinalResidual(false), 0, 'e', 3);
         lines << QString("Количество итераций на удвоенной сетке: %1").arg(m_last2Iter);
         lines << QString("Параметр на удвоенной сетке: ω2 = %1").arg(m_result.omega2);
         lines << QString("Невязка для v₂(x, y): %1").arg(m_result.finalResidual2, 0, 'e', 5);
@@ -604,7 +607,7 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     R.maxPt.first  = m_a + maxI * m_h;
     R.maxPt.second = m_c + maxJ * m_k;
     R.lastResidual2 = finer.lastResidual();
-    R.finalResidual2 = finer.computeFinalResidual();
+    R.finalResidual2 = finer.computeFinalResidual(false);
 
     m_result       = R;
     m_resultCached = true;

@@ -118,5 +118,5 @@ private:
     double computeInitialResidual() const;
     void initializeInterior();
     void applyInterpolatedInitialGuess(const QVector<QVector<double> > &coarseU, int coarseN, int coarseM);
-    double computeFinalResidual() const;
+    double computeFinalResidual(bool isTest) const;
 };
