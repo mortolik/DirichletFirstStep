@@ -25,37 +25,42 @@ QTabWidget *DirichletDisplayWidget::tableWidget()
 
 void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVector<double>> &data)
 {
-    int cols = data.size();
-    int rows = data[0].size();
+    int rows = data.size();
+    int cols = data[0].size();
 
     table->setRowCount(rows);
     table->setColumnCount(cols + 1);
 
-    table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
+    // Определяем, нужно ли использовать половинный шаг (только для m_tableV2)
+    bool isV2Table = (table == m_tableV2);
+    double hStep = isV2Table ? m_model->h() / 2 : m_model->h();
+    double kStep = isV2Table ? m_model->k() / 2 : m_model->k();
 
+    table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
     for (int i = 0; i < cols; ++i)
     {
-        double x = m_model->a() + i * m_model->h();
-        table->setHorizontalHeaderItem(i + 1, new QTableWidgetItem(QString::number(x, 'f', 2)));
+        double x = m_model->a() + i * hStep; // Используем hStep (обычный или половинный)
+        table->setHorizontalHeaderItem(i + 1, new QTableWidgetItem(QString::number(x, 'f', 3)));
     }
 
     for (int j = 0; j < rows; ++j)
     {
-        double y = m_model->c() + j * m_model->k();
-        table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 2)));
+        double y = m_model->c() + j * kStep; // Используем kStep (обычный или половинный)
+        table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 3)));
 
-        for (int i = 0; i < cols; ++i)
-        {
-            QString val = QString::number(data[i][j], 'f', 4);
-            auto *item = new QTableWidgetItem(val);
-            item->setTextAlignment(Qt::AlignCenter);
-            table->setItem(j, i + 1, item);
-        }
+
+    for (int i = 0; i < cols; ++i)
+    {
+        QString val = QString::number(data[j][i], 'f', 5);
+        auto *item = new QTableWidgetItem(val);
+        item->setTextAlignment(Qt::AlignCenter);
+        table->setItem(i, j + 1, item);
+    }
     }
 
-    table->horizontalHeader()->setStretchLastSection(true);
-    table->resizeColumnsToContents();
-    table->resizeRowsToContents();
+table->horizontalHeader()->setStretchLastSection(true);
+table->resizeColumnsToContents();
+table->resizeRowsToContents();
 }
 
 void DirichletDisplayWidget::updateTable()
