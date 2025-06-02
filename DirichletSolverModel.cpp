@@ -217,9 +217,10 @@ double DirichletSolverModel::computeInitialResidual() const
     return maxR;
 }
 
-double DirichletSolverModel::computeFinalResidual(bool isTest) const
+double DirichletSolverModel::computeFinalResidual(bool isTestTask) const
 {
-    double maxR = 0.0;
+    double sumSquares = 0.0;
+
     for (int i = 1; i < m_n; ++i)
     {
         for (int j = 1; j < m_m; ++j)
@@ -231,13 +232,14 @@ double DirichletSolverModel::computeFinalResidual(bool isTest) const
                 (m_u[i+1][j] - 2*m_u[i][j] + m_u[i-1][j]) / (m_h * m_h) +
                 (m_u[i][j+1] - 2*m_u[i][j] + m_u[i][j-1]) / (m_k * m_k);
 
-            double rhs = isTest ? -fTest(x, y) : f(x, y);
+            double rhs = isTestTask ? -fTest(x, y) : f(x, y);
             double R = laplace - rhs;
 
-            maxR = qMax(maxR, qAbs(R));
+            sumSquares += R * R;
         }
     }
-    return maxR;
+
+    return std::sqrt(sumSquares / ((m_n - 1) * (m_m - 1)));
 }
 
 void DirichletSolverModel::solveMainProblem()
@@ -425,7 +427,7 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
-    lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
+    //lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
     lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
 
     if (data.isTest && data.maxError >= 0)
