@@ -48,18 +48,18 @@ void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVecto
         table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 3)));
 
 
-    for (int i = 0; i < cols; ++i)
-    {
-        QString val = QString::number(data[j][i], 'f', 5);
-        auto *item = new QTableWidgetItem(val);
-        item->setTextAlignment(Qt::AlignCenter);
-        table->setItem(i, j + 1, item);
-    }
+        for (int i = 0; i < cols; ++i)
+        {
+            QString val = QString::number(data[j][i], 'f', 5);
+            auto *item = new QTableWidgetItem(val);
+            item->setTextAlignment(Qt::AlignCenter);
+            table->setItem(i, j + 1, item);
+        }
     }
 
-table->horizontalHeader()->setStretchLastSection(true);
-table->resizeColumnsToContents();
-table->resizeRowsToContents();
+    table->horizontalHeader()->setStretchLastSection(true);
+    table->resizeColumnsToContents();
+    table->resizeRowsToContents();
 }
 
 void DirichletDisplayWidget::updateTable()
@@ -73,7 +73,9 @@ void DirichletDisplayWidget::updateTable()
     else
     {
         if (!m_model->hasFinerCached())
+        {
             m_model->computeFinerGridComparison();
+        }
         const auto &result = m_model->lastFinerGridResult();
         fillTable(m_tableV, result.v);
         fillTable(m_tableV2, result.v2);

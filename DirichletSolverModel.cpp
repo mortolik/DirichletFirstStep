@@ -38,7 +38,8 @@ void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
 
     m_u.resize(m_n + 1);
     m_uExact.resize(m_n + 1);
-    for (int i = 0; i <= m_n; ++i) {
+    for (int i = 0; i <= m_n; ++i)
+    {
         m_u[i].fill(0.0, m_m + 1);
         m_uExact[i].fill(0.0, m_m + 1);
     }
@@ -48,8 +49,12 @@ void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
     initialize();
 
     for (int i = 0; i <= m_n; ++i)
+    {
         for (int j = 0; j <= m_m; ++j)
+        {
             m_uPrevFlat[flatIdx(i, j)] = m_u[i][j];
+        }
+    }
 
     m_lastIter     = 0;
     m_lastResidual = 0.0;
@@ -252,9 +257,11 @@ void DirichletSolverModel::solveMainProblem()
     do {
         maxDiff = 0.0;
 #pragma omp parallel for reduction(max:maxDiff)
-        for(int i = 1; i < m_n; ++i) {
+        for(int i = 1; i < m_n; ++i)
+        {
             double x = m_a + i * m_h;
-            for(int j = 1; j < m_m; ++j) {
+            for(int j = 1; j < m_m; ++j)
+            {
                 int idx = flatIdx(i,j);
                 double y   = m_c + j * m_k;
                 double rhs = (m_uPrevFlat[idx + cols] + m_uPrevFlat[idx - cols]) * m_invH2
@@ -265,7 +272,10 @@ void DirichletSolverModel::solveMainProblem()
                               + m_omega * (rhs / m_denom);
                 double diff = std::abs(uNew - m_uPrevFlat[idx]);
                 m_uPrevFlat[idx] = uNew;
-                if (diff > maxDiff) maxDiff = diff;
+                if (diff > maxDiff)
+                {
+                    maxDiff = diff;
+                }
             }
         }
         ++iter;
@@ -359,12 +369,16 @@ QVector<QVector<double>> DirichletSolverModel::compareWithFinerGrid(int finerN, 
 
     double maxError = 0.0;
     QVector<QVector<double>> diff(m_n + 1, QVector<double>(m_m + 1, 0.0));
-    for (int i = 0; i <= m_n; ++i) {
-        for (int j = 0; j <= m_m; ++j) {
+    for (int i = 0; i <= m_n; ++i)
+    {
+        for (int j = 0; j <= m_m; ++j)
+        {
             double delta = std::abs(m_u[i][j] - fineU[i * scaleI][j * scaleJ]);
             diff[i][j] = delta;
             if (delta > maxError)
+            {
                 maxError = delta;
+            }
         }
     }
 
@@ -383,7 +397,9 @@ DirichletSolverModel::ReportData DirichletSolverModel::generateReportData(bool i
     data.isTest = isTestTask;
 
     if (isTestTask)
+    {
         data.maxError = maxError();
+    }
 
     if (!isTestTask)
     {
@@ -491,13 +507,15 @@ double DirichletSolverModel::computeOptimalOmega() const
 void DirichletSolverModel::applyInterpolatedInitialGuess(
     const QVector<QVector<double>>& coarseU, int coarseN, int coarseM)
 {
-    for (int i = 1; i < m_n; ++i) {
+    for (int i = 1; i < m_n; ++i)
+    {
         double x = m_a + i * m_h;
         double u = (x - m_a) / (m_b - m_a) * coarseN;
         int i0 = std::clamp(int(floor(u)), 0, coarseN-1);
         double dx = u - i0;
 
-        for (int j = 1; j < m_m; ++j) {
+        for (int j = 1; j < m_m; ++j)
+        {
             double y = m_c + j * m_k;
             double v = (y - m_c) / (m_d - m_c) * coarseM;
             int j0 = std::clamp(int(floor(v)), 0, coarseM-1);
@@ -517,20 +535,26 @@ void DirichletSolverModel::applyInterpolatedInitialGuess(
         }
     }
 
-    for (int i = 0; i <= m_n; ++i) {
+    for (int i = 0; i <= m_n; ++i)
+    {
         double x = m_a + i * m_h;
         m_u[i][0]   = mu3(x);
         m_u[i][m_m] = mu4(x);
     }
-    for (int j = 0; j <= m_m; ++j) {
+    for (int j = 0; j <= m_m; ++j)
+    {
         double y = m_c + j * m_k;
         m_u[0][j]   = mu1(y);
         m_u[m_n][j] = mu2(y);
     }
 
     for (int i = 0; i <= m_n; ++i)
+    {
         for (int j = 0; j <= m_m; ++j)
+        {
             m_uPrevFlat[flatIdx(i,j)] = m_u[i][j];
+        }
+    }
 }
 
 DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComparison() const
@@ -567,15 +591,18 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     int maxI = 0, maxJ = 0;
 
 #pragma omp parallel for reduction(max:maxErr)
-    for (int i = 0; i <= m_n; ++i) {
+    for (int i = 0; i <= m_n; ++i)
+    {
         R.v2[i].resize(m_m + 1);
         R.diff[i].resize(m_m + 1);
-        for (int j = 0; j <= m_m; ++j) {
+        for (int j = 0; j <= m_m; ++j)
+        {
             double fineVal = fineU[i * scaleI][j * scaleJ];
             double delta   = std::abs(m_u[i][j] - fineVal);
             R.v2  [i][j] = fineVal;
             R.diff[i][j] = delta;
-            if (delta > maxErr) {
+            if (delta > maxErr)
+            {
                 maxErr = delta;
                 maxI = i;
                 maxJ = j;

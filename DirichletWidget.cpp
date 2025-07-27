@@ -215,9 +215,13 @@ void DirichletWidget::onSolveButtonClicked()
     m_model->setOmega(omega);
 
     if (m_isTest)
+    {
         m_model->solveTestProblem();
+    }
     else
+    {
         m_model->solveMainProblem();
+    }
 
     updateChart();
     emit solutionUpdated();
@@ -233,7 +237,9 @@ void DirichletWidget::updateChart()
 {
     auto seriesList = m_surface->seriesList();
     for (auto series : seriesList)
+    {
         m_surface->removeSeries(series);
+    }
     \
         if (m_dataOnly)
     {
@@ -243,17 +249,17 @@ void DirichletWidget::updateChart()
         return;
     }
 
-        if (m_isTest)
-        {
-            auto *exact = createSeries(m_model->exactSolution(), "u*(x, y)");
-            exact->setBaseColor(Qt::blue);
+    if (m_isTest)
+    {
+        auto *exact = createSeries(m_model->exactSolution(), "u*(x, y)");
+        exact->setBaseColor(Qt::blue);
 
-            auto *numerical = createSeries(m_model->solution(), "v(x, y)");
-            numerical->setBaseColor(Qt::green);
+        auto *numerical = createSeries(m_model->solution(), "v(x, y)");
+        numerical->setBaseColor(Qt::green);
 
-            m_surface->addSeries(exact);
-            m_surface->addSeries(numerical);
-        }
+        m_surface->addSeries(exact);
+        m_surface->addSeries(numerical);
+    }
 
     else
     {
