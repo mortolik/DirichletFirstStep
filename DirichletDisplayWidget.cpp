@@ -31,7 +31,6 @@ void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVecto
     table->setRowCount(rows);
     table->setColumnCount(cols + 1);
 
-    // Определяем, нужно ли использовать половинный шаг (только для m_tableV2)
     bool isV2Table = (table == m_tableV2);
     double hStep = isV2Table ? m_model->h() / 2 : m_model->h();
     double kStep = isV2Table ? m_model->k() / 2 : m_model->k();
@@ -39,13 +38,13 @@ void DirichletDisplayWidget::fillTable(QTableWidget *table, const QVector<QVecto
     table->setHorizontalHeaderItem(0, new QTableWidgetItem("Y \\ X"));
     for (int i = 0; i < cols; ++i)
     {
-        double x = m_model->a() + i * hStep; // Используем hStep (обычный или половинный)
+        double x = m_model->a() + i * hStep;
         table->setHorizontalHeaderItem(i + 1, new QTableWidgetItem(QString::number(x, 'f', 3)));
     }
 
     for (int j = 0; j < rows; ++j)
     {
-        double y = m_model->c() + j * kStep; // Используем kStep (обычный или половинный)
+        double y = m_model->c() + j * kStep;
         table->setItem(j, 0, new QTableWidgetItem(QString::number(y, 'f', 3)));
 
 

@@ -24,22 +24,18 @@ DirichletSolverModel::DirichletSolverModel(QObject *parent)
 
 void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
 {
-    // Сохраняем основные параметры:
     m_n       = n;
     m_m       = m;
     m_eps     = eps;
     m_maxIter = maxIter;
 
-    // Считаем шаги по x/y:
     m_h = (m_b - m_a) / double(m_n);
     m_k = (m_d - m_c) / double(m_m);
 
-    // Предвычисляем константы:
     m_invH2 = 1.0 / (m_h * m_h);
     m_invK2 = 1.0 / (m_k * m_k);
     m_denom = 2.0 * (m_invH2 + m_invK2);
 
-    // Инициализируем контейнер m_u и m_uExact нужного размера и нулями:
     m_u.resize(m_n + 1);
     m_uExact.resize(m_n + 1);
     for (int i = 0; i <= m_n; ++i) {
@@ -47,18 +43,14 @@ void DirichletSolverModel::setup(int n, int m, double eps, int maxIter)
         m_uExact[i].fill(0.0, m_m + 1);
     }
 
-    // Плоский буфер:
     m_uPrevFlat.resize((m_n + 1) * (m_m + 1));
 
-    // Заполняем границы и точное решение:
-    initialize();  // ваша функция, которая делает applyBoundary() и заполняет m_uExact
+    initialize();
 
-    // Копируем gраничные и начальные значения в плоский буфер:
     for (int i = 0; i <= m_n; ++i)
         for (int j = 0; j <= m_m; ++j)
             m_uPrevFlat[flatIdx(i, j)] = m_u[i][j];
 
-    // Сбрасываем отчётные поля:
     m_lastIter     = 0;
     m_lastResidual = 0.0;
     m_resultCached = false;
@@ -101,7 +93,6 @@ double DirichletSolverModel::mu4(double x) const
 
 void DirichletSolverModel::initialize()
 {
-    // граничные условия — именно так, как было изначально
     for (int i = 0; i <= m_n; ++i)
     {
         double x = m_a + i * m_h;
@@ -122,7 +113,6 @@ void DirichletSolverModel::initialize()
 
 void DirichletSolverModel::solveTestProblem()
 {
-    // Границы
     for (int i = 0; i <= m_n; ++i)
     {
         double x = m_a + i * m_h;
@@ -136,12 +126,10 @@ void DirichletSolverModel::solveTestProblem()
         m_u[m_n][j]    = uStar(m_b, y);
     }
 
-    // Внутренность — начальное приближение нулевое
     for (int i = 1; i < m_n; ++i)
         for (int j = 1; j < m_m; ++j)
             m_u[i][j] = 0.0;
 
-// Заполнение точного решения
 #pragma omp parallel for
     for (int i = 0; i <= m_n; ++i)
     {
@@ -153,7 +141,6 @@ void DirichletSolverModel::solveTestProblem()
         }
     }
 
-    // Вычисление
     double h2 = m_h * m_h, k2 = m_k * m_k;
     double denom = 2.0 * (1.0 / h2 + 1.0 / k2);
 
@@ -248,7 +235,6 @@ void DirichletSolverModel::solveMainProblem()
     timer.start();
     if (!m_skipInitialization)
         initializeInterior();
-    // 1) Вычисляем шаги и константы только один раз
     m_h     = (m_b - m_a) / m_n;
     m_k     = (m_d - m_c) / m_m;
     m_invH2 = 1.0 / (m_h * m_h);
@@ -256,7 +242,6 @@ void DirichletSolverModel::solveMainProblem()
     m_denom = 2.0 * (m_invH2 + m_invK2);
 
     int rows = m_n + 1, cols = m_m + 1;
-    // 2) Выделяем/заполняем плоский буфер
     m_uPrevFlat.resize(rows * cols);
     for(int i = 0; i < rows; ++i)
         for(int j = 0; j < cols; ++j)
@@ -286,7 +271,6 @@ void DirichletSolverModel::solveMainProblem()
         ++iter;
     } while (maxDiff > m_eps && iter < m_maxIter);
 
-    // 3) Копируем обратно в m_u
     for(int i = 0; i < rows; ++i)
         for(int j = 0; j < cols; ++j)
             m_u[i][j] = m_uPrevFlat[flatIdx(i,j)];
@@ -427,7 +411,6 @@ QString DirichletSolverModel::reportString(bool isTestTask) const
     lines << QString("Метод верхней релаксации: ω = %1").arg(data.omega);
     lines << QString("Количество итераций: %1").arg(m_lastIter);
     lines << QString("Точность метода: εмет = %1, максимум итераций: %2").arg(data.eps).arg(data.maxIter);
-    //lines << QString("Невязка СЛАУ на начальном приближении R(0): %1").arg(computeInitialResidual(), 0, 'e', 3);
     lines << QString("Достигнутая точность: %1").arg(static_cast<double>(lastResidual()), 0, 'e', 5);
 
     if (data.isTest && data.maxError >= 0)
@@ -508,7 +491,6 @@ double DirichletSolverModel::computeOptimalOmega() const
 void DirichletSolverModel::applyInterpolatedInitialGuess(
     const QVector<QVector<double>>& coarseU, int coarseN, int coarseM)
 {
-    // 1) билинейная интерполяция для внутренних узлов
     for (int i = 1; i < m_n; ++i) {
         double x = m_a + i * m_h;
         double u = (x - m_a) / (m_b - m_a) * coarseN;
@@ -535,7 +517,6 @@ void DirichletSolverModel::applyInterpolatedInitialGuess(
         }
     }
 
-    // 2) Снова жёстко задаём граничные условия
     for (int i = 0; i <= m_n; ++i) {
         double x = m_a + i * m_h;
         m_u[i][0]   = mu3(x);
@@ -547,7 +528,6 @@ void DirichletSolverModel::applyInterpolatedInitialGuess(
         m_u[m_n][j] = mu2(y);
     }
 
-    // 3) Плоский буфер
     for (int i = 0; i <= m_n; ++i)
         for (int j = 0; j <= m_m; ++j)
             m_uPrevFlat[flatIdx(i,j)] = m_u[i][j];
@@ -563,7 +543,6 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     int finerN = m_n * 2;
     int finerM = m_m * 2;
 
-    // 1. Создаём и решаем на утончённой сетке
     DirichletSolverModel finer;
     finer.setup(finerN, finerM, m_eps, m_maxIter);
     double omega = finer.computeOptimalOmega();
@@ -577,7 +556,6 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     int scaleI = finerN / m_n;
     int scaleJ = finerM / m_m;
 
-    // 2) Готовим результат
     FinerGridResult R;
     R.iterations = finer.lastIter();
     R.v    = m_u;
@@ -588,7 +566,6 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     double maxErr = 0.0;
     int maxI = 0, maxJ = 0;
 
-// 3) Считаем разности и запоминаем точку максимума
 #pragma omp parallel for reduction(max:maxErr)
     for (int i = 0; i <= m_n; ++i) {
         R.v2[i].resize(m_m + 1);

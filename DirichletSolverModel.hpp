@@ -30,7 +30,7 @@ public:
         double eps = 1e-6;
         int maxIter = 10000;
         double maxError = -1.0;
-        double accuracy = -1.0; // ε2
+        double accuracy = -1.0;
         bool isTest = true;
     };
 
@@ -92,12 +92,11 @@ private:
     QVector<QVector<double>> m_uExact;
 
 
-    double m_invH2;    // добавить
-    double m_invK2;    // добавить
+    double m_invH2;
+    double m_invK2;
     double m_denom;
-    std::vector<double> m_uPrevFlat;  // добавить
+    std::vector<double> m_uPrevFlat;
 
-    // Удобный доступ к плоскому индексу
     inline int flatIdx(int i, int j) const { return i*(m_m+1) + j; }
 
     void initialize();

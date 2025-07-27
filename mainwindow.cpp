@@ -63,7 +63,6 @@ void MainWindow::updateDockWidget()
             m_tableDock->setWidget(currentDisplay->tableWidget());
         }
 
-        // Подключаем обновление на смену внутренней вкладки
         disconnect(m_stepOneTabs, nullptr, this, nullptr);
         connect(m_stepOneTabs, &QTabWidget::currentChanged, this, &MainWindow::updateDockWidget);
     }
