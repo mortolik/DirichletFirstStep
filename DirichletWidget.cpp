@@ -41,6 +41,7 @@ DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidg
     setupChart();
 
     connect(m_solveBtn, &QPushButton::clicked, this, &DirichletWidget::onSolveButtonClicked);
+    connect(m_optimalCheckBox, &QCheckBox::toggled, this, [this](bool checked) { m_omegaParam->setEnabled(!checked);});
 }
 
 void DirichletWidget::setupChart()
@@ -151,6 +152,7 @@ QGroupBox* DirichletWidget::createSettingsGroup()
     m_omegaParam->setRange(0.1, 2.0);
     m_omegaParam->setSingleStep(0.1);
     m_omegaParam->setValue(1.8);
+    m_omegaParam->setEnabled(false);
 
     auto createLabeledWidget = [](const QString& labelText, QWidget* widget, int width) -> QWidget* {
         QLabel* label = new QLabel(labelText);
