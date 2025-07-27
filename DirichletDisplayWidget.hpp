@@ -4,6 +4,9 @@
 #include <QTableWidget>
 #include "DirichletWidget.hpp"
 
+namespace Dirichlet
+{
+
 class DirichletDisplayWidget : public QWidget
 {
     Q_OBJECT
@@ -33,4 +36,4 @@ private:
     QTableWidget *createEmptyTable();
     void fillTable(QTableWidget *table, const QVector<QVector<double>> &data);
 };
-
+}

@@ -4,6 +4,8 @@
 #include "DirichletSolverModel.hpp"
 #include "DirichletDisplayWidget.hpp"
 
+namespace Dirichlet
+{
 DirichletDisplayWidget::DirichletDisplayWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
     m_model(model),
@@ -132,4 +134,5 @@ QTableWidget *DirichletDisplayWidget::createEmptyTable()
     auto *table = new QTableWidget;
     table->setStyleSheet("QTableWidget { border: 1px solid #ccc; }");
     return table;
+}
 }

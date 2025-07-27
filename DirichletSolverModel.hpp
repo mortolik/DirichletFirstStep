@@ -4,6 +4,9 @@
 
 QT_FORWARD_DECLARE_CLASS(QString)
 
+namespace Dirichlet
+{
+
 class DirichletSolverModel : public QObject
 {
     Q_OBJECT
@@ -119,3 +122,4 @@ private:
     void applyInterpolatedInitialGuess(const QVector<QVector<double> > &coarseU, int coarseN, int coarseM);
     double computeFinalResidual(bool isTest) const;
 };
+}

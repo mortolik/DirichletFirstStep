@@ -16,6 +16,9 @@
 #include <QSurface3DSeries>
 #include <QSurfaceDataItem>
 
+namespace Dirichlet
+{
+
 DirichletWidget::DirichletWidget(DirichletSolverModel *model, bool isTest, QWidget *parent)
     : QWidget(parent),
     m_model(model),
@@ -310,4 +313,5 @@ QGroupBox* DirichletWidget::createChartBox()
     layout->addWidget(m_container);
 
     return box;
+}
 }

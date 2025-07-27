@@ -1,6 +1,5 @@
 #pragma once
 #include "DirichletSolverModel.hpp"
-#include "qtextedit.h"
 #include <QWidget>
 #include <QtDataVisualization/Q3DSurface>
 #include <QtDataVisualization/QSurface3DSeries>
@@ -20,6 +19,9 @@ QT_FORWARD_DECLARE_CLASS(DirichletSolverModel)
 
 
 using namespace QtDataVisualization;
+
+namespace Dirichlet
+{
 
 class DirichletWidget : public QWidget
 {
@@ -67,3 +69,4 @@ private:
     QGroupBox *createReportBox();
     QGroupBox* createChartBox();
 };
+}

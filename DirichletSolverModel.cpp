@@ -6,6 +6,9 @@
 #include <QTextStream>
 #include <QElapsedTimer>
 
+namespace Dirichlet
+{
+
 DirichletSolverModel::DirichletSolverModel(QObject *parent)
     : QObject(parent),
     m_n(0),
@@ -618,4 +621,6 @@ DirichletSolverModel::FinerGridResult DirichletSolverModel::computeFinerGridComp
     m_result       = R;
     m_resultCached = true;
     return m_result;
+}
+
 }

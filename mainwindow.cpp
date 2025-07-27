@@ -8,8 +8,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     m_tabWidget(new QTabWidget(this)),
     m_stepOneTabs(new QTabWidget(this)),
-    m_testModel(new DirichletSolverModel(this)),
-    m_mainModel(new DirichletSolverModel(this)),
+    m_testModel(new Dirichlet::DirichletSolverModel(this)),
+    m_mainModel(new Dirichlet::DirichletSolverModel(this)),
     m_tableDock(new QDockWidget(this))
 {
     setCentralWidget(m_tabWidget);
@@ -38,13 +38,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupFirstTestProblem()
 {
-    auto *display = new DirichletDisplayWidget(m_testModel, true, this);
+    auto *display = new Dirichlet::DirichletDisplayWidget(m_testModel, true, this);
     m_stepOneTabs->addTab(display, "Тестовая задача");
 }
 
 void MainWindow::setupFirstMainProblem()
 {
-    auto *display = new DirichletDisplayWidget(m_mainModel, false, this);
+    auto *display = new Dirichlet::DirichletDisplayWidget(m_mainModel, false, this);
     m_stepOneTabs->addTab(display, "Основная задача");
 }
 
@@ -57,7 +57,7 @@ void MainWindow::updateDockWidget()
     if (m_stepOneTabs)
     {
         int innerIndex = m_stepOneTabs->currentIndex();
-        auto* currentDisplay = qobject_cast<DirichletDisplayWidget*>(m_stepOneTabs->widget(innerIndex));
+        auto* currentDisplay = qobject_cast<Dirichlet::DirichletDisplayWidget*>(m_stepOneTabs->widget(innerIndex));
         if (currentDisplay)
         {
             m_tableDock->setWidget(currentDisplay->tableWidget());

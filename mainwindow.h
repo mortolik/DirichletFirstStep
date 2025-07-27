@@ -26,11 +26,11 @@ private:
     QTabWidget *m_tabWidget;
     QTabWidget *m_stepOneTabs;
 
-    DirichletSolverModel *m_testModel;
-    DirichletSolverModel *m_mainModel;
+    Dirichlet::DirichletSolverModel *m_testModel;
+    Dirichlet::DirichletSolverModel *m_mainModel;
 
-    DirichletWidget *m_testWidget;
-    DirichletWidget *m_mainWidget;
+    Dirichlet::DirichletWidget *m_testWidget;
+    Dirichlet::DirichletWidget *m_mainWidget;
     QDockWidget* m_tableDock {nullptr};
 
     void updateDockWidget();
