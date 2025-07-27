@@ -1,8 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "DirichletSolverModel.hpp"
-#include "DirichletWidget.hpp"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -11,6 +9,11 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+namespace Dirichlet
+{
+class DirichletWidget;
+class DirichletSolverModel;
+}
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

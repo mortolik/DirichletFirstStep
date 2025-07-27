@@ -2,11 +2,12 @@
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QTableWidget>
-#include "DirichletWidget.hpp"
 
+QT_FORWARD_DECLARE_CLASS(QGroupBox)
 namespace Dirichlet
 {
-
+class DirichletWidget;
+class DirichletSolverModel;
 class DirichletDisplayWidget : public QWidget
 {
     Q_OBJECT

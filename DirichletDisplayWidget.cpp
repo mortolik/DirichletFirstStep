@@ -1,6 +1,7 @@
 #include <QGroupBox>
 #include <QHeaderView>
 #include <QElapsedTimer>
+#include "DirichletWidget.hpp"
 #include "DirichletSolverModel.hpp"
 #include "DirichletDisplayWidget.hpp"
 

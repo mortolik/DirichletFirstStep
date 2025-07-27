@@ -1,5 +1,4 @@
 #pragma once
-#include "DirichletSolverModel.hpp"
 #include <QWidget>
 #include <QtDataVisualization/Q3DSurface>
 #include <QtDataVisualization/QSurface3DSeries>
@@ -22,7 +21,7 @@ using namespace QtDataVisualization;
 
 namespace Dirichlet
 {
-
+class DirichletSolverModel;
 class DirichletWidget : public QWidget
 {
     Q_OBJECT
