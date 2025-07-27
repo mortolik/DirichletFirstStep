@@ -25,9 +25,6 @@ private:
 
     QTabWidget *m_tabWidget;
     QTabWidget *m_stepOneTabs;
-    QTabWidget *m_stepTwo1Tabs;
-    QTabWidget *m_stepTwo2Tabs;
-    QTabWidget *m_stepThreeTabs;
 
     DirichletSolverModel *m_testModel;
     DirichletSolverModel *m_mainModel;
