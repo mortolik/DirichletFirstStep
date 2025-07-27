@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "Dirichle3StepModel.hpp"
 #include "DirichletSolverModel.hpp"
 #include "DirichletDisplayWidget.hpp"
 
@@ -14,12 +13,6 @@ MainWindow::MainWindow(QWidget *parent)
     m_stepThreeTabs(new QTabWidget(this)),
     m_testModel(new DirichletSolverModel(this)),
     m_mainModel(new DirichletSolverModel(this)),
-    m_test21Model(new DirichletSolverModel2(this)),
-    m_main21Model(new DirichletSolverModel2(this)),
-    m_test22Model(new Dirichlet2step(this)),
-    m_main22Model(new Dirichlet2step(this)),
-    m_test3Model(new Dirichle3StepModel(this)),
-    m_main3Model(new Dirichle3StepModel(this)),
     m_tableDock(new QDockWidget(this))
 {
     setCentralWidget(m_tabWidget);
@@ -31,15 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     setupFirstTestProblem();
     setupFirstMainProblem();
-
-    setupSecond1TestProblem();
-    setupSecond1MainProblem();
-
-    setupSecond2TestProblem();
-    setupSecond2MainProblem();
-
-    setupThirdTestProblem();
-    setupThirdMainProblem();
 
     QWidget *stepOneContainer = new QWidget(this);
     QVBoxLayout *stepOneLayout = new QVBoxLayout(stepOneContainer);
@@ -83,42 +67,6 @@ void MainWindow::setupFirstMainProblem()
 {
     auto *display = new DirichletDisplayWidget(m_mainModel, false, this);
     m_stepOneTabs->addTab(display, "Основная задача");
-}
-
-void MainWindow::setupSecond1TestProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_test21Model, true, this);
-    m_stepTwo1Tabs->addTab(display, "Тестовая задача");
-}
-
-void MainWindow::setupSecond1MainProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_main21Model, false, this);
-    m_stepTwo1Tabs->addTab(display, "Основная задача");
-}
-
-void MainWindow::setupSecond2TestProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_test22Model, true, this);
-    m_stepTwo2Tabs->addTab(display, "Тестовая задача");
-}
-
-void MainWindow::setupSecond2MainProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_main22Model, false, this);
-    m_stepTwo2Tabs->addTab(display, "Основная задача");
-}
-
-void MainWindow::setupThirdTestProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_test3Model, true, this);
-    m_stepThreeTabs->addTab(display, "Тестова задача");
-}
-
-void MainWindow::setupThirdMainProblem()
-{
-    auto *display = new DirichletDisplayWidget(m_main3Model, false, this);
-    m_stepThreeTabs->addTab(display, "Основная задача");
 }
 
 MainWindow::~MainWindow()
