@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_tabWidget->addTab(stepOneContainer, "Первая ступень");
 
     connect(m_tabWidget, &QTabWidget::currentChanged, this, &MainWindow::updateDockWidget);
-    updateDockWidget(m_tabWidget->currentIndex());
+    updateDockWidget();
 
 
     showMaximized();
@@ -52,29 +52,20 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::updateDockWidget(int index)
+void MainWindow::updateDockWidget()
 {
-    QTabWidget* currentStepTabs = nullptr;
-
-    int outerIndex = m_tabWidget->currentIndex();
-
-    switch (outerIndex)
+    if (m_stepOneTabs)
     {
-    case 0: currentStepTabs = m_stepOneTabs; break;
-    }
-
-    if (currentStepTabs)
-    {
-        int innerIndex = currentStepTabs->currentIndex();
-        auto* currentDisplay = qobject_cast<DirichletDisplayWidget*>(currentStepTabs->widget(innerIndex));
+        int innerIndex = m_stepOneTabs->currentIndex();
+        auto* currentDisplay = qobject_cast<DirichletDisplayWidget*>(m_stepOneTabs->widget(innerIndex));
         if (currentDisplay)
         {
             m_tableDock->setWidget(currentDisplay->tableWidget());
         }
 
         // Подключаем обновление на смену внутренней вкладки
-        disconnect(currentStepTabs, nullptr, this, nullptr);
-        connect(currentStepTabs, &QTabWidget::currentChanged, this, &MainWindow::updateDockWidget);
+        disconnect(m_stepOneTabs, nullptr, this, nullptr);
+        connect(m_stepOneTabs, &QTabWidget::currentChanged, this, &MainWindow::updateDockWidget);
     }
 }
 

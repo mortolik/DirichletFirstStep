@@ -33,6 +33,6 @@ private:
     DirichletWidget *m_mainWidget;
     QDockWidget* m_tableDock {nullptr};
 
-    void updateDockWidget(int index);
+    void updateDockWidget();
 };
 #endif // MAINWINDOW_H
